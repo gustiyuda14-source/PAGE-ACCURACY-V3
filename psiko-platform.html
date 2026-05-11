@@ -1,0 +1,2820 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ajiks Akademi — Platform Psiko</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --navy: #1B2B4B;
+      --navy-light: #243860;
+      --navy-dark: #111D33;
+      --navy-xd: #0C1525;
+      --cream: #F5F0E8;
+      --cream-dark: #EDE6D8;
+      --cream-light: #FAF7F2;
+      --gold: #C9A96E;
+      --gold-light: #DEC090;
+      --gold-dark: #A8854A;
+      --sage: #4A7C59;
+      --sage-light: #6A9E79;
+      --red: #C0392B;
+      --red-dark: #922B21;
+      --red-light: #E74C3C;
+      --border: #D8D0C4;
+      --border-light: #EAE4DC;
+      --white: #FFFFFF;
+      --text-primary: #1B2B4B;
+      --text-secondary: #5A6B8A;
+      --text-muted: #8A9BB8;
+      --sidebar-w: 220px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--navy-xd);
+      color: var(--text-primary);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ══ AUTH SCREENS ══ */
+    .screen {
+      position: fixed;
+      inset: 0;
+      background: var(--navy-xd);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .auth-card {
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(201, 169, 110, .18);
+      border-radius: 8px;
+      padding: 40px;
+      width: 380px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .6);
+    }
+
+    .auth-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--gold);
+      text-align: center;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .auth-sub {
+      font-size: 10px;
+      color: rgba(255, 255, 255, .3);
+      text-align: center;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+
+    .auth-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .4);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .auth-input {
+      width: 100%;
+      padding: 11px 14px;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 3px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border-color .2s;
+      margin-bottom: 14px;
+    }
+
+    .auth-input:focus {
+      border-color: var(--gold);
+    }
+
+    .auth-input option {
+      background: var(--navy-dark);
+      color: #fff;
+    }
+
+    .auth-btn {
+      width: 100%;
+      padding: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      background: var(--gold);
+      color: var(--navy-dark);
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all .2s;
+      margin-top: 4px;
+    }
+
+    .auth-btn:hover {
+      background: var(--gold-light);
+    }
+
+    .auth-error {
+      font-size: 11px;
+      color: #ff6b6b;
+      text-align: center;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .auth-error.show {
+      display: block;
+    }
+
+    .auth-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, .07);
+      margin: 20px 0;
+    }
+
+    .auth-hint {
+      font-size: 10px;
+      color: rgba(255, 255, 255, .2);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .auth-back {
+      font-size: 11px;
+      color: rgba(255, 255, 255, .3);
+      text-align: center;
+      margin-top: 14px;
+      cursor: pointer;
+      transition: color .2s;
+    }
+
+    .auth-back:hover {
+      color: rgba(255, 255, 255, .6);
+    }
+
+    .select-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .select-heading em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .select-sub {
+      font-size: 11px;
+      color: rgba(255, 255, 255, .35);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    /* ══ APP LAYOUT ══ */
+    .app {
+      display: flex;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--navy-dark);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      height: 100vh;
+      position: relative;
+      z-index: 10;
+    }
+
+    .sidebar-brand {
+      padding: 22px 20px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .brand-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+
+    .brand-tagline {
+      font-size: 9px;
+      font-weight: 300;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .3);
+      margin-top: 3px;
+    }
+
+    .sidebar-user {
+      padding: 14px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, .06);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--navy);
+      flex-shrink: 0;
+    }
+
+    .user-info .u-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, .85);
+    }
+
+    .user-info .u-role {
+      font-size: 10px;
+      color: rgba(255, 255, 255, .35);
+      margin-top: 1px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 10px 0;
+      overflow-y: auto;
+    }
+
+    .nav-section-label {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .2);
+      padding: 14px 20px 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: all .15s;
+      border-left: 3px solid transparent;
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, .5);
+      user-select: none;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, .04);
+      color: rgba(255, 255, 255, .75);
+    }
+
+    .nav-item.active {
+      background: rgba(201, 169, 110, .1);
+      border-left-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .nav-item.active .nav-icon {
+      opacity: 1;
+    }
+
+    .nav-icon {
+      font-size: 15px;
+      width: 18px;
+      text-align: center;
+      opacity: .5;
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--red);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 10px;
+    }
+
+    .sidebar-footer {
+      padding: 14px 20px;
+      border-top: 1px solid rgba(255, 255, 255, .06);
+      font-size: 11px;
+      color: rgba(255, 255, 255, .25);
+    }
+
+    /* ══ MAIN ══ */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--cream);
+    }
+
+    .topbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .page-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .page-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar-btn {
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all .15s;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+    }
+
+    .topbar-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold-dark);
+    }
+
+    .topbar-btn.primary {
+      background: var(--navy);
+      color: var(--gold);
+      border-color: var(--navy);
+    }
+
+    .topbar-btn.primary:hover {
+      background: var(--navy-light);
+    }
+
+    .topbar-btn.danger {
+      background: var(--red);
+      color: #fff;
+      border-color: var(--red);
+    }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px;
+    }
+
+    /* ══ PAGES ══ */
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    /* ══ CARDS ══ */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 1px 8px rgba(27, 43, 75, .04);
+    }
+
+    .card-hd {
+      background: var(--navy);
+      padding: 18px 22px;
+      border-bottom: 2px solid var(--gold);
+    }
+
+    .card-hd.red {
+      background: var(--red-dark);
+      border-color: var(--red-light);
+    }
+
+    .card-hd-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+
+    .card-hd-label.red {
+      color: #ff8a80;
+    }
+
+    .card-hd-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .card-bd {
+      padding: 20px 22px;
+    }
+
+    .section-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 18px 0;
+    }
+
+    /* ══ BUTTONS ══ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all .15s;
+      font-family: inherit;
+    }
+
+    .btn-navy {
+      background: var(--navy);
+      color: var(--gold);
+    }
+
+    .btn-navy:hover {
+      background: var(--navy-light);
+    }
+
+    .btn-gold {
+      background: var(--gold);
+      color: var(--navy);
+    }
+
+    .btn-gold:hover {
+      background: var(--gold-dark);
+    }
+
+    .btn-red {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .btn-red:hover {
+      background: var(--red-dark);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--navy);
+      color: var(--navy);
+    }
+
+    .btn-outline-red {
+      background: transparent;
+      border: 1.5px solid var(--red);
+      color: var(--red);
+    }
+
+    .btn-full {
+      width: 100%;
+    }
+
+    /* ══ STATS ══ */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-box {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px 18px;
+    }
+
+    .stat-box-val {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .stat-box-lbl {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .stat-box-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .c-navy {
+      color: var(--navy);
+    }
+
+    .c-sage {
+      color: var(--sage);
+    }
+
+    .c-gold {
+      color: var(--gold-dark);
+    }
+
+    .c-red {
+      color: var(--red);
+    }
+
+    /* ══ MODE CARDS ══ */
+    .mode-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .mode-card {
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+      border: 2px solid transparent;
+    }
+
+    .mode-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .mode-card.lat {
+      background: var(--navy);
+    }
+
+    .mode-card.lat:hover {
+      border-color: var(--gold);
+      box-shadow: 0 8px 32px rgba(27, 43, 75, .3);
+    }
+
+    .mode-card.exam {
+      background: var(--red-dark);
+    }
+
+    .mode-card.exam:hover {
+      border-color: #ff6b6b;
+      box-shadow: 0 8px 32px rgba(192, 57, 43, .35);
+    }
+
+    .mc-body {
+      padding: 20px 22px;
+    }
+
+    .mc-badge {
+      display: inline-block;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 2px;
+      margin-bottom: 10px;
+    }
+
+    .mc-badge.blue {
+      background: rgba(201, 169, 110, .15);
+      color: var(--gold);
+      border: 1px solid rgba(201, 169, 110, .25);
+    }
+
+    .mc-badge.red {
+      background: rgba(231, 76, 60, .2);
+      color: #ff8a80;
+      border: 1px solid rgba(231, 76, 60, .3);
+    }
+
+    .mc-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+
+    .mc-desc {
+      font-size: 11px;
+      color: rgba(255, 255, 255, .5);
+      line-height: 1.6;
+    }
+
+    .mc-feats {
+      padding: 0 22px 6px;
+    }
+
+    .mc-feat {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, .65);
+      margin-bottom: 5px;
+    }
+
+    .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dot-gold {
+      background: var(--gold);
+    }
+
+    .dot-red {
+      background: #ff6b6b;
+    }
+
+    .mc-foot {
+      padding: 12px 22px;
+      background: rgba(0, 0, 0, .15);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .8);
+    }
+
+    /* ══ TABLE ══ */
+    .hist-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .hist-table thead th {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 8px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      background: var(--cream);
+    }
+
+    .hist-table tbody tr {
+      border-bottom: 1px solid var(--border-light);
+      transition: background .1s;
+    }
+
+    .hist-table tbody tr:hover {
+      background: var(--cream-light);
+    }
+
+    .hist-table tbody td {
+      padding: 11px 14px;
+      font-size: 12px;
+      color: var(--text-primary);
+    }
+
+    .mode-pill {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 2px;
+    }
+
+    .pill-lat {
+      background: rgba(74, 124, 89, .1);
+      color: var(--sage);
+    }
+
+    .pill-exam {
+      background: rgba(192, 57, 43, .1);
+      color: var(--red);
+    }
+
+    .score-chip {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    /* ══ KOLOM CHIPS ══ */
+    .kolom-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .k-chip {
+      border: 1.5px solid var(--border);
+      border-radius: 3px;
+      padding: 9px 6px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--white);
+      transition: all .15s;
+      user-select: none;
+    }
+
+    .k-chip:hover {
+      border-color: var(--gold-dark);
+    }
+
+    .k-chip.active {
+      border-color: var(--navy);
+      background: var(--navy);
+      color: var(--gold);
+    }
+
+    .k-chip .k-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .k-chip .k-tema {
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: inherit;
+      opacity: .6;
+      margin-top: 1px;
+    }
+
+    .k-chip.active .k-tema {
+      opacity: .7;
+    }
+
+    .select-input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      background: var(--cream);
+      font-family: inherit;
+      font-size: 12px;
+      color: var(--text-primary);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .select-input:focus {
+      border-color: var(--gold);
+    }
+
+    .info-box {
+      padding: 10px 14px;
+      border-radius: 2px;
+      font-size: 11px;
+      line-height: 1.5;
+      margin-bottom: 16px;
+      border-left: 3px solid;
+    }
+
+    .info-box.green {
+      background: rgba(74, 124, 89, .07);
+      border-color: var(--sage);
+      color: var(--sage);
+    }
+
+    .info-box.red {
+      background: rgba(192, 57, 43, .07);
+      border-color: var(--red);
+      color: var(--red-dark);
+    }
+
+    .info-box.gold {
+      background: rgba(201, 169, 110, .08);
+      border-color: var(--gold);
+      color: var(--gold-dark);
+    }
+
+    /* ══ SOAL ══ */
+    .exam-bar {
+      background: var(--red-dark);
+      padding: 7px 28px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, .55);
+      flex-shrink: 0;
+    }
+
+    .exam-bar span {
+      font-weight: 600;
+      color: rgba(255, 255, 255, .9);
+    }
+
+    .timer-display {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .timer-ok {
+      color: #fff;
+    }
+
+    .timer-warn {
+      color: #ffd93d;
+    }
+
+    .timer-urgent {
+      color: #ff6b6b;
+      animation: blink .5s infinite alternate;
+    }
+
+    @keyframes blink {
+      to {
+        opacity: .4;
+      }
+    }
+
+    .q-soal-wrap {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .q-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .q-head.lat-head {
+      background: var(--cream);
+    }
+
+    .q-head.exam-head {
+      background: #fff1f0;
+    }
+
+    .q-num-big {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .q-progress-txt {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .q-badge {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 2px;
+    }
+
+    .q-badge.lat {
+      background: rgba(74, 124, 89, .1);
+      color: var(--sage);
+      border: 1px solid rgba(74, 124, 89, .2);
+    }
+
+    .q-badge.exam {
+      background: rgba(192, 57, 43, .1);
+      color: var(--red);
+      border: 1px solid rgba(192, 57, 43, .25);
+    }
+
+    .progress-bar {
+      height: 2px;
+      background: var(--border);
+    }
+
+    .progress-fill {
+      height: 100%;
+      transition: width .3s;
+    }
+
+    .pf-gold {
+      background: var(--gold);
+    }
+
+    .pf-red {
+      background: var(--red-light);
+    }
+
+    .q-body {
+      padding: 18px 20px;
+    }
+
+    .key-tbl {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
+    }
+
+    .key-tbl th {
+      background: var(--navy);
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 7px 10px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, .08);
+    }
+
+    .key-tbl td {
+      background: var(--cream);
+      font-size: 20px;
+      padding: 9px 10px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    .soal-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    .soal-cell {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 2px;
+      padding: 14px 8px;
+      text-align: center;
+      font-size: 26px;
+    }
+
+    .ans-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .ans-btn {
+      border: 2px solid var(--border);
+      border-radius: 2px;
+      padding: 11px 6px;
+      background: var(--white);
+      cursor: pointer;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      transition: all .12s;
+      font-family: inherit;
+      user-select: none;
+    }
+
+    .ans-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold-dark);
+    }
+
+    .ans-btn.sel-lat {
+      border-color: var(--navy);
+      background: var(--navy);
+      color: var(--gold);
+    }
+
+    .ans-btn.sel-exam {
+      border-color: var(--red);
+      background: var(--red);
+      color: #fff;
+    }
+
+    /* ══ RESULTS ══ */
+    .result-hd {
+      padding: 22px 26px;
+      border-bottom: 3px solid;
+    }
+
+    .result-hd.lat {
+      background: var(--navy);
+      border-color: var(--gold);
+    }
+
+    .result-hd.exam {
+      background: var(--red-dark);
+      border-color: var(--red-light);
+    }
+
+    .res-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .res-stat {
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 16px;
+      text-align: center;
+      background: var(--cream);
+    }
+
+    .res-val {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .res-lbl {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .perf-box {
+      text-align: center;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      margin-bottom: 16px;
+    }
+
+    .perf-grade {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .perf-note {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-style: italic;
+      margin-top: 3px;
+    }
+
+    .kolom-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .km-cell {
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 8px 4px;
+      text-align: center;
+      background: var(--cream);
+    }
+
+    .km-col {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
+    .km-score {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    /* ══ LEADERBOARD ══ */
+    .lb-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border-light);
+      transition: background .1s;
+    }
+
+    .lb-row:hover {
+      background: var(--cream-light);
+    }
+
+    .lb-rank {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 700;
+      width: 32px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .rank-1 {
+      color: #f1c40f;
+    }
+
+    .rank-2 {
+      color: var(--text-muted);
+    }
+
+    .rank-3 {
+      color: #cd7f32;
+    }
+
+    .lb-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .lb-info {
+      flex: 1;
+    }
+
+    .lb-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .lb-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .lb-score {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .lb-bar-wrap {
+      width: 80px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .lb-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--sage);
+    }
+
+    .lb-row.me {
+      background: rgba(201, 169, 110, .07);
+      border-left: 3px solid var(--gold);
+    }
+
+    /* ══ PROFILE ══ */
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 16px;
+    }
+
+    .profile-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .profile-header {
+      background: var(--navy);
+      padding: 24px;
+      text-align: center;
+      border-bottom: 2px solid var(--gold);
+    }
+
+    .profile-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--navy);
+      margin: 0 auto 12px;
+    }
+
+    .profile-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .profile-role {
+      font-size: 10px;
+      color: rgba(255, 255, 255, .45);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    .profile-body {
+      padding: 16px;
+    }
+
+    .profile-stat {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-light);
+      font-size: 12px;
+    }
+
+    .profile-stat:last-child {
+      border-bottom: none;
+    }
+
+    .ps-label {
+      color: var(--text-muted);
+    }
+
+    .ps-val {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      background: var(--cream);
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--gold);
+      background: var(--white);
+    }
+
+    /* ══ ADMIN ══ */
+    .admin-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 2px;
+      background: rgba(192, 57, 43, .1);
+      color: var(--red);
+      border: 1px solid rgba(192, 57, 43, .2);
+    }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .admin-table thead th {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      background: var(--cream);
+      white-space: nowrap;
+    }
+
+    .admin-table tbody tr {
+      border-bottom: 1px solid var(--border-light);
+      transition: background .1s;
+    }
+
+    .admin-table tbody tr:hover {
+      background: var(--cream-light);
+    }
+
+    .admin-table tbody td {
+      padding: 10px 12px;
+      font-size: 12px;
+      color: var(--text-primary);
+      vertical-align: middle;
+    }
+
+    .heat-cell {
+      width: 36px;
+      height: 30px;
+      border-radius: 2px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    .heat-hi {
+      background: rgba(74, 124, 89, .15);
+      color: var(--sage);
+    }
+
+    .heat-mid {
+      background: rgba(201, 169, 110, .18);
+      color: var(--gold-dark);
+    }
+
+    .heat-lo {
+      background: rgba(192, 57, 43, .12);
+      color: var(--red);
+    }
+
+    .heat-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .icon-btn {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 2px;
+      font-size: 13px;
+      transition: background .1s;
+      line-height: 1;
+    }
+
+    .icon-btn:hover {
+      background: var(--border);
+    }
+
+    /* ══ MODAL ══ */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .55);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--white);
+      border-radius: 4px;
+      padding: 28px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+    }
+
+    .modal-icon {
+      font-size: 36px;
+      margin-bottom: 14px;
+    }
+
+    .modal-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+
+    .modal-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .modal-btns {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* ══ MISC ══ */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .score-bar-wrap {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      display: inline-block;
+      width: 60px;
+      vertical-align: middle;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in {
+      animation: fadeUp .3s ease both;
+    }
+
+    .exam-active .sidebar {
+      opacity: .4;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ══════════ SCREEN: LOGIN ══════════ -->
+  <div id="screen-login" class="screen">
+    <div class="auth-card">
+      <div class="auth-logo">Ajiks Akademi</div>
+      <div class="auth-sub">Platform Psiko Mandiri · IPDN Capra Sultra</div>
+      <div>
+        <label class="auth-label">ID Pengguna</label>
+        <input class="auth-input" id="auth-id" placeholder="member  atau  admin" autocomplete="off">
+        <label class="auth-label">Password</label>
+        <input class="auth-input" id="auth-pw" type="password" placeholder="••••••••"
+          onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="auth-btn" onclick="doLogin()">Masuk ke Platform →</button>
+        <div class="auth-error" id="auth-err">ID atau password salah.</div>
+      </div>
+      <div class="auth-divider"></div>
+      <div class="auth-hint">member / user &nbsp;·&nbsp; admin / admin</div>
+    </div>
+  </div>
+
+  <!-- ══════════ SCREEN: PILIH SISWA ══════════ -->
+  <div id="screen-select" class="screen" style="display:none;">
+    <div class="auth-card">
+      <div class="select-heading">Siapa <em>Anda?</em></div>
+      <div class="select-sub">Pilih namamu dari daftar peserta di bawah ini</div>
+      <label class="auth-label">Nama Peserta</label>
+      <select class="auth-input" id="student-select">
+        <option value="">— Pilih nama kamu —</option>
+      </select>
+      <button class="auth-btn" onclick="doSelectUser()">Masuk ke Dashboard →</button>
+      <div class="auth-error" id="select-err">Pilih nama terlebih dahulu.</div>
+      <div class="auth-back" onclick="backToLogin()">← Kembali ke Login</div>
+    </div>
+  </div>
+
+  <!-- ══════════ MAIN APP ══════════ -->
+  <div class="app" id="app" style="display:none;">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-logo">Ajiks Akademi</div>
+        <div class="brand-tagline">Platform Psiko Mandiri</div>
+      </div>
+      <div class="sidebar-user">
+        <div class="avatar" id="sb-avatar">A</div>
+        <div class="user-info">
+          <div class="u-name" id="sb-name">—</div>
+          <div class="u-role" id="sb-role">—</div>
+        </div>
+      </div>
+      <div class="sidebar-nav">
+        <div id="nav-member-section">
+          <div class="nav-section-label">Menu Utama</div>
+          <div class="nav-item active" onclick="showPage('p-dashboard',this)">
+            <div class="nav-icon">🏠</div>Dashboard
+          </div>
+          <div class="nav-section-label">Tes &amp; Latihan</div>
+          <div class="nav-item" onclick="showPage('p-latihan',this)">
+            <div class="nav-icon">📚</div>Sesi Latihan
+          </div>
+          <div class="nav-item" onclick="showPage('p-exam',this)">
+            <div class="nav-icon">⚔️</div>Real Exam
+          </div>
+          <div class="nav-section-label">Progres</div>
+          <div class="nav-item" onclick="showPage('p-riwayat',this)">
+            <div class="nav-icon">📋</div>Riwayat Tes
+          </div>
+          <div class="nav-item" onclick="showPage('p-leaderboard',this)">
+            <div class="nav-icon">🏆</div>Leaderboard
+          </div>
+          <div class="nav-section-label">Akun</div>
+          <div class="nav-item" onclick="showPage('p-profil',this)">
+            <div class="nav-icon">👤</div>Profil Saya
+          </div>
+        </div>
+        <div id="nav-admin-section" style="display:none;">
+          <div class="nav-section-label">Admin</div>
+          <div class="nav-item" onclick="showPage('p-admin',this)">
+            <div class="nav-icon">⚙️</div>Panel Admin
+          </div>
+          <div class="nav-item" onclick="showPage('p-leaderboard',this)">
+            <div class="nav-icon">🏆</div>Leaderboard
+          </div>
+        </div>
+      </div>
+      <div class="sidebar-footer">
+        <span style="cursor:pointer;color:rgba(255,255,255,.4);" onclick="doLogout()">⬡ Keluar Akun</span>
+        &nbsp;·&nbsp; v1.0
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main" id="main">
+      <div class="topbar" id="topbar">
+        <div>
+          <div class="page-title" id="topbar-title">Dashboard</div>
+          <div class="page-sub" id="topbar-sub">Selamat datang</div>
+        </div>
+        <div class="topbar-actions" id="topbar-actions"></div>
+      </div>
+
+      <div class="content" id="content">
+
+        <!-- PAGE: DASHBOARD -->
+        <div class="page active fade-in" id="p-dashboard">
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-box-val c-navy" id="ds-total">0</div>
+              <div class="stat-box-lbl">Total Sesi</div>
+              <div class="stat-box-sub" id="ds-total-sub">—</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-val c-sage" id="ds-avg">0%</div>
+              <div class="stat-box-lbl">Rata-rata Skor</div>
+              <div class="stat-box-sub" id="ds-avg-sub">—</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-val c-gold" id="ds-best">0%</div>
+              <div class="stat-box-lbl">Skor Terbaik</div>
+              <div class="stat-box-sub" id="ds-best-sub">—</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-val c-red" id="ds-weak">—</div>
+              <div class="stat-box-lbl">Kolom Terlemah</div>
+              <div class="stat-box-sub" id="ds-weak-sub">—</div>
+            </div>
+          </div>
+          <div class="mode-grid">
+            <div class="mode-card lat" onclick="showPage('p-latihan',null)">
+              <div class="mc-body">
+                <div class="mc-badge blue">Mode Latihan</div>
+                <div class="mc-title">Sesi Latihan<br>Bebas</div>
+                <div class="mc-desc">Pilih kolom sendiri, tanpa tekanan waktu.</div>
+              </div>
+              <div class="mc-feats">
+                <div class="mc-feat">
+                  <div class="dot dot-gold"></div>Pilih kolom tertentu
+                </div>
+                <div class="mc-feat">
+                  <div class="dot dot-gold"></div>Timer opsional
+                </div>
+                <div class="mc-feat">
+                  <div class="dot dot-gold"></div>Pembahasan tersedia
+                </div>
+              </div>
+              <div class="mc-foot"><span>Mulai Latihan</span><span>→</span></div>
+            </div>
+            <div class="mode-card exam" onclick="showPage('p-exam',null)">
+              <div class="mc-body">
+                <div class="mc-badge red">⚠ Real Exam</div>
+                <div class="mc-title">Simulasi<br>Ujian Resmi</div>
+                <div class="mc-desc">Timer ketat, semua kolom wajib, masuk ranking.</div>
+              </div>
+              <div class="mc-feats">
+                <div class="mc-feat">
+                  <div class="dot dot-red"></div>Timer 3 menit/kolom
+                </div>
+                <div class="mc-feat">
+                  <div class="dot dot-red"></div>Semua kolom I–XX
+                </div>
+                <div class="mc-feat">
+                  <div class="dot dot-red"></div>Masuk leaderboard
+                </div>
+              </div>
+              <div class="mc-foot"><span>Mulai Ujian</span><span>→</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div
+              style="background:var(--navy);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;">
+              <div
+                style="font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);">
+                Riwayat Tes Terakhir</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.4);cursor:pointer;"
+                onclick="showPage('p-riwayat',null)">Lihat semua →</div>
+            </div>
+            <table class="hist-table">
+              <thead>
+                <tr>
+                  <th>Mode</th>
+                  <th>Tes</th>
+                  <th>Tanggal</th>
+                  <th>Durasi</th>
+                  <th>Skor</th>
+                </tr>
+              </thead>
+              <tbody id="ds-history-body">
+                <tr>
+                  <td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">Belum ada sesi. Mulai
+                    latihan!</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PAGE: LATIHAN SETUP -->
+        <div class="page fade-in" id="p-latihan">
+          <div style="display:grid;grid-template-columns:1fr 360px;gap:16px;align-items:start;">
+            <div class="card">
+              <div class="card-hd">
+                <div class="card-hd-label">Sesi Latihan Bebas</div>
+                <div class="card-hd-title">Konfigurasi Latihan</div>
+              </div>
+              <div class="card-bd">
+                <div class="section-label">Pilih Kolom (bisa lebih dari satu)</div>
+                <div class="kolom-grid" id="kolamGrid" style="grid-template-columns: 1fr 1fr;">
+                  <div class="k-chip active" data-kolom="1" onclick="toggleChip(this)">
+                    <div class="k-num">Paket 1</div>
+                    <div class="k-tema">Kolom I – X</div>
+                  </div>
+                  <div class="k-chip" data-kolom="2" onclick="toggleChip(this)">
+                    <div class="k-num">Paket 2</div>
+                    <div class="k-tema">Kolom XI – XX</div>
+                  </div>
+                </div>
+                <div class="two-col">
+                  <div>
+                    <div class="section-label">Mode Timer</div>
+                    <select class="select-input" id="timerMode">
+                      <option value="0">Tanpa Timer</option>
+                      <option value="300">Santai (5 mnt/kolom)</option>
+                      <option value="180">Standar (3 mnt/kolom)</option>
+                      <option value="120">Ketat (2 mnt/kolom)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <div class="section-label">Pembahasan</div>
+                    <select class="select-input">
+                      <option>Di akhir tiap kolom</option>
+                      <option>Di akhir semua kolom</option>
+                      <option>Tidak tampilkan</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="info-box green" id="latInfo"><strong>1 kolom dipilih · 50 soal</strong> · Estimasi 10–20
+                  menit</div>
+                <button class="btn btn-gold btn-full" onclick="startLatihan()">Mulai Sesi Latihan →</button>
+              </div>
+            </div>
+            <div class="card">
+              <div style="background:rgba(74,124,89,.08);border-left:3px solid var(--sage);padding:14px 16px;">
+                <div
+                  style="font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--sage);margin-bottom:6px;">
+                  Tips Latihan</div>
+                <div style="font-size:11px;color:var(--text-secondary);line-height:1.7;">Fokus dulu pada kolom yang
+                  nilainya di bawah <strong>70%</strong>. Ulangi 2–3 kali sebelum pindah kolom berikutnya.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE: LATIHAN SOAL -->
+        <div class="page fade-in" id="p-latihan-soal">
+          <div style="max-width:680px;margin:0 auto;">
+            <div class="q-soal-wrap">
+              <div class="q-head lat-head">
+                <div>
+                  <div class="q-progress-txt">Soal <span id="l-qnum">1</span> dari 50</div>
+                  <div class="q-num-big">Soal <span id="l-qnum2">1</span></div>
+                </div>
+                <div class="q-badge lat">Latihan · Kolom I</div>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill pf-gold" id="l-progress" style="width:2%"></div>
+              </div>
+              <div class="q-body">
+                <div class="section-label">Tabel Kunci Jawaban</div>
+                <table class="key-tbl">
+                  <thead>
+                    <tr>
+                      <th>A</th>
+                      <th>B</th>
+                      <th>C</th>
+                      <th>D</th>
+                      <th>E</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>☀️</td>
+                      <td>☁️</td>
+                      <td>☂️</td>
+                      <td>❄️</td>
+                      <td>⚡</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="section-label">Soal — Simbol yang hilang?</div>
+                <div class="soal-grid">
+                  <div class="soal-cell">☁️</div>
+                  <div class="soal-cell">☂️</div>
+                  <div class="soal-cell">❄️</div>
+                  <div class="soal-cell">⚡</div>
+                </div>
+                <div class="section-label">Pilih Jawaban</div>
+                <div class="ans-grid" id="l-ans">
+                  <button class="ans-btn" onclick="selectLat(this,'A')">A</button>
+                  <button class="ans-btn" onclick="selectLat(this,'B')">B</button>
+                  <button class="ans-btn" onclick="selectLat(this,'C')">C</button>
+                  <button class="ans-btn" onclick="selectLat(this,'D')">D</button>
+                  <button class="ans-btn" onclick="selectLat(this,'E')">E</button>
+                </div>
+                <div class="divider"></div>
+                <div style="display:flex;gap:8px;">
+                  <button class="btn btn-gold" style="flex:1;" onclick="finishLatihan()">Selesai &amp; Lihat Hasil
+                    →</button>
+                  <button class="btn btn-outline-red" style="padding:10px 14px;font-size:10px;"
+                    onclick="showModal('modal-exit')">✕ Keluar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE: REAL EXAM SETUP -->
+        <div class="page fade-in" id="p-exam">
+          <div style="max-width:560px;">
+            <div class="card">
+              <div class="card-hd red">
+                <div class="card-hd-label red">⚠ Konfirmasi Real Exam</div>
+                <div class="card-hd-title">Siap Memulai Ujian Simulasi?</div>
+              </div>
+              <div class="card-bd">
+                <div class="two-col">
+                  <div style="border:1px solid var(--border);border-radius:2px;padding:14px;background:var(--cream);">
+                    <div class="section-label">Total Soal</div>
+                    <div
+                      style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--navy);">
+                      500 Butir</div>
+                  </div>
+                  <div style="border:1px solid var(--border);border-radius:2px;padding:14px;background:var(--cream);">
+                    <div class="section-label">Timer</div>
+                    <div
+                      style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--red);">3
+                      Mnt/Kolom</div>
+                  </div>
+                  <div style="border:1px solid var(--border);border-radius:2px;padding:14px;background:var(--cream);">
+                    <div class="section-label">Pilih Paket</div>
+                    <select id="examPaket" class="select-input" style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--navy);margin-top:4px;">
+                      <option value="1">Paket 1 (I - X)</option>
+                      <option value="2">Paket 2 (XI - XX)</option>
+                    </select>
+                  </div>
+                  <div style="border:1px solid var(--border);border-radius:2px;padding:14px;background:var(--cream);">
+                    <div class="section-label">Hasil</div>
+                    <div
+                      style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--sage);">
+                      Masuk Ranking</div>
+                  </div>
+                </div>
+                <div class="info-box red">Setelah dimulai, ujian <strong>tidak dapat dijeda</strong>. Pastikan tidak ada
+                  gangguan.</div>
+                <div style="display:flex;gap:8px;">
+                  <button class="btn btn-red" style="flex:1;" onclick="startExam()">Mulai Ujian Sekarang →</button>
+                  <button class="btn btn-outline" onclick="showPage('p-dashboard',null)">Batal</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE: EXAM SOAL -->
+        <div class="page fade-in" id="p-exam-soal">
+          <div style="max-width:680px;margin:0 auto;">
+            <div class="q-soal-wrap">
+              <div class="q-head exam-head">
+                <div>
+                  <div class="q-progress-txt">Kolom III · Soal <span id="e-qnum">16</span>/50</div>
+                  <div class="q-num-big" style="color:var(--red);">Soal <span id="e-qnum2">266</span></div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+                  <div class="q-badge exam">Real Exam · (3/20)</div>
+                  <div class="timer-display"><span>⏱</span><span id="e-timer-val" class="timer-urgent">3:00</span></div>
+                </div>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill pf-red" id="e-progress" style="width:12%"></div>
+              </div>
+              <div class="q-body">
+                <div class="section-label">Tabel Kunci Jawaban</div>
+                <table class="key-tbl">
+                  <thead>
+                    <tr>
+                      <th>A</th>
+                      <th>B</th>
+                      <th>C</th>
+                      <th>D</th>
+                      <th>E</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>✂️</td>
+                      <td>✏️</td>
+                      <td>⚙️</td>
+                      <td>🔑</td>
+                      <td>💡</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="section-label">Soal — Simbol yang hilang?</div>
+                <div class="soal-grid">
+                  <div class="soal-cell">✏️</div>
+                  <div class="soal-cell">⚙️</div>
+                  <div class="soal-cell">🔑</div>
+                  <div class="soal-cell">💡</div>
+                </div>
+                <div class="section-label">Pilih Jawaban</div>
+                <div class="ans-grid" id="e-ans">
+                  <button class="ans-btn" onclick="selectExam(this,'A')">A</button>
+                  <button class="ans-btn" onclick="selectExam(this,'B')">B</button>
+                  <button class="ans-btn" onclick="selectExam(this,'C')">C</button>
+                  <button class="ans-btn" onclick="selectExam(this,'D')">D</button>
+                  <button class="ans-btn" onclick="selectExam(this,'E')">E</button>
+                </div>
+                <div class="divider"></div>
+                <button class="btn btn-red btn-full" onclick="finishExam()">Selesai &amp; Lihat Hasil →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE: HASIL LATIHAN -->
+        <div class="page fade-in" id="p-hasil-lat">
+          <div style="max-width:680px;">
+            <div class="result-hd lat">
+              <div
+                style="font-size:9px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:6px;"
+                id="hl-date">Hasil Sesi Latihan</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:#fff;"
+                id="hl-name">—</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.45);font-style:italic;margin-top:3px;" id="hl-meta">—
+              </div>
+            </div>
+            <div
+              style="background:var(--white);border:1px solid var(--border);border-top:none;border-radius:0 0 4px 4px;padding:22px;">
+              <div class="res-stats">
+                <div class="res-stat">
+                  <div class="res-val c-sage" id="hl-benar">—</div>
+                  <div class="res-lbl">Benar</div>
+                </div>
+                <div class="res-stat">
+                  <div class="res-val c-red" id="hl-salah">—</div>
+                  <div class="res-lbl">Salah</div>
+                </div>
+                <div class="res-stat">
+                  <div class="res-val c-navy" id="hl-skor">—</div>
+                  <div class="res-lbl">Skor</div>
+                </div>
+              </div>
+              <div class="perf-box">
+                <div
+                  style="font-size:9px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">
+                  Kategori Performa</div>
+                <div class="perf-grade" id="hl-grade">—</div>
+                <div class="perf-note" id="hl-note">—</div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-navy" style="flex:1;" onclick="showPage('p-latihan',null)">↺ Latihan
+                  Lagi</button>
+                <button class="btn btn-outline" style="flex:1;" onclick="showPage('p-dashboard',null)">←
+                  Dashboard</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE: HASIL EXAM -->
+        <div class="page fade-in" id="p-hasil-exam">
+          <div style="max-width:680px;">
+            <div class="result-hd exam">
+              <div
+                style="font-size:9px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:6px;"
+                id="he-date">Hasil Real Exam</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:#fff;"
+                id="he-name">—</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.45);font-style:italic;margin-top:3px;" id="he-meta">—
+              </div>
+            </div>
+            <div
+              style="background:var(--white);border:1px solid var(--border);border-top:none;border-radius:0 0 4px 4px;padding:22px;">
+              <div class="res-stats">
+                <div class="res-stat">
+                  <div class="res-val c-sage" id="he-benar">—</div>
+                  <div class="res-lbl">Benar</div>
+                </div>
+                <div class="res-stat">
+                  <div class="res-val c-red" id="he-salah">—</div>
+                  <div class="res-lbl">Salah</div>
+                </div>
+                <div class="res-stat">
+                  <div class="res-val c-navy" id="he-skor">—</div>
+                  <div class="res-lbl">Skor</div>
+                </div>
+              </div>
+              <div class="perf-box">
+                <div
+                  style="font-size:9px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">
+                  Performa · Ranking Kelas</div>
+                <div class="perf-grade" id="he-grade">—</div>
+                <div class="perf-note" id="he-note">—</div>
+              </div>
+              <div class="section-label">Skor per Kolom (I–XX)</div>
+              <div class="kolom-mini-grid" id="he-kolom-grid"></div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-navy" style="flex:1;" onclick="showPage('p-dashboard',null)">← Dashboard</button>
+                <button class="btn btn-outline" style="flex:1;" onclick="showPage('p-leaderboard',null)">🏆 Lihat
+                  Ranking</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE: RIWAYAT -->
+        <div class="page fade-in" id="p-riwayat">
+          <div class="card">
+            <div
+              style="background:var(--navy);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;">
+              <div
+                style="font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);">
+                Semua Riwayat Tes</div>
+            </div>
+            <table class="hist-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Mode</th>
+                  <th>Tes</th>
+                  <th>Tanggal</th>
+                  <th>Durasi</th>
+                  <th>Benar</th>
+                  <th>Salah</th>
+                  <th>Skor</th>
+                </tr>
+              </thead>
+              <tbody id="rw-body">
+                <tr>
+                  <td colspan="8" style="text-align:center;color:var(--text-muted);padding:20px;">Belum ada riwayat.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PAGE: LEADERBOARD -->
+        <div class="page fade-in" id="p-leaderboard">
+          <div style="display:grid;grid-template-columns:1fr 280px;gap:14px;">
+            <div class="card">
+              <div style="background:var(--navy);padding:12px 18px;">
+                <div
+                  style="font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);">
+                  🏆 Ranking Kelas — Real Exam</div>
+              </div>
+              <div id="lb-list"></div>
+            </div>
+            <div>
+              <div class="card">
+                <div class="card-bd">
+                  <div class="section-label">Posisi Kamu</div>
+                  <div style="text-align:center;padding:14px 0;">
+                    <div
+                      style="font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:700;color:var(--gold-dark);line-height:1;"
+                      id="lb-my-rank">—</div>
+                    <div style="font-size:11px;color:var(--text-muted);margin-top:4px;" id="lb-total-text">—</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE: PROFIL -->
+        <div class="page fade-in" id="p-profil">
+          <div class="profile-grid">
+            <div>
+              <div class="profile-card">
+                <div class="profile-header">
+                  <div class="profile-avatar" id="pf-avatar">A</div>
+                  <div class="profile-name" id="pf-name">—</div>
+                  <div class="profile-role" id="pf-role">—</div>
+                </div>
+                <div class="profile-body">
+                  <div class="profile-stat"><span class="ps-label">Total Sesi</span><span class="ps-val"
+                      id="pf-total">0</span></div>
+                  <div class="profile-stat"><span class="ps-label">Rata-rata Skor</span><span class="ps-val c-sage"
+                      id="pf-avg">0%</span></div>
+                  <div class="profile-stat"><span class="ps-label">Skor Terbaik</span><span class="ps-val c-gold"
+                      id="pf-best">0%</span></div>
+                  <div class="profile-stat"><span class="ps-label">Kelas</span><span class="ps-val"
+                      id="pf-kelas">—</span></div>
+                  <div class="profile-stat"><span class="ps-label">No. Peserta</span><span class="ps-val"
+                      id="pf-nomor">—</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-hd">
+                <div class="card-hd-label">Akun</div>
+                <div class="card-hd-title">Informasi Peserta</div>
+              </div>
+              <div class="card-bd">
+                <div class="two-col">
+                  <div class="form-group"><label class="form-label">Nama Lengkap</label><input class="form-input"
+                      id="pf-input-nama" readonly></div>
+                  <div class="form-group"><label class="form-label">Nomor Peserta</label><input class="form-input"
+                      id="pf-input-nomor" readonly></div>
+                </div>
+                <div class="form-group"><label class="form-label">Kelas</label><input class="form-input"
+                    id="pf-input-kelas" readonly></div>
+                <div class="form-group"><label class="form-label">Asal Daerah</label><input class="form-input"
+                    id="pf-input-asal" readonly></div>
+                <div class="divider"></div>
+                <button class="btn btn-outline-red btn-full" onclick="doLogout()">⬡ Keluar Akun</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE: ADMIN -->
+        <div class="page fade-in" id="p-admin">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--navy);">
+                Panel Kontrol Admin</div>
+              <div class="admin-badge">⚙ Admin Mode</div>
+            </div>
+            <button class="btn btn-navy" style="font-size:10px;padding:7px 14px;"
+              onclick="showModal('modal-add-student')">+ Tambah Peserta</button>
+          </div>
+
+          <div style="background:var(--white);padding:14px 16px;border-radius:4px;border:1px solid var(--border);margin-bottom:16px;display:flex;align-items:center;gap:16px;">
+            <div style="flex:1;">
+              <div style="font-size:12px;font-weight:600;color:var(--navy);">Durasi Timer Ujian (Detik)</div>
+              <div style="font-size:10px;color:var(--text-muted);">Ubah batas waktu untuk ujian simulasi.</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="number" id="adm-timer-input" class="form-input" style="width:80px;text-align:center;" value="180">
+              <button class="btn btn-navy" onclick="saveAdminTimer()" style="padding:10px 14px;">Simpan</button>
+            </div>
+          </div>
+
+          <div class="stats-grid" style="margin-bottom:16px;">
+            <div class="stat-box">
+              <div class="stat-box-val c-navy" id="adm-total-peserta">0</div>
+              <div class="stat-box-lbl">Total Peserta</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-val c-gold" id="adm-avg-kelas">—</div>
+              <div class="stat-box-lbl">Avg Kelas</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-val c-sage" id="adm-total-sesi">0</div>
+              <div class="stat-box-lbl">Total Sesi</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-val c-red" id="adm-kolom-sulit">—</div>
+              <div class="stat-box-lbl">Kolom Tersulit</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="background:var(--navy);padding:10px 16px;">
+              <div
+                style="font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);">
+                Daftar Peserta</div>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Nama</th>
+                    <th>No. Peserta</th>
+                    <th>Kelas</th>
+                    <th>Asal</th>
+                    <th>Total Sesi</th>
+                    <th>Avg Skor</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="admin-student-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /content -->
+    </div><!-- /main -->
+  </div><!-- /app -->
+
+  <!-- MODAL: ADD STUDENT -->
+  <div class="overlay" id="modal-add-student">
+    <div class="modal" style="max-width:480px;text-align:left;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--navy);">Tambah
+          Peserta Baru</div>
+        <button class="icon-btn" onclick="hideModal('modal-add-student')" style="font-size:16px;">✕</button>
+      </div>
+      <div class="two-col">
+        <div class="form-group"><label class="form-label">Nama Lengkap</label><input class="form-input" id="new-nama"
+            placeholder="Nama peserta"></div>
+        <div class="form-group"><label class="form-label">Nomor Peserta</label><input class="form-input" id="new-nomor"
+            placeholder="IPDN-2026-XXXX"></div>
+      </div>
+      <div class="two-col">
+        <div class="form-group"><label class="form-label">Asal Daerah</label><input class="form-input" id="new-asal"
+            placeholder="Kota, Provinsi"></div>
+        <div class="form-group"><label class="form-label">Kelas</label>
+          <select class="select-input" id="new-kelas">
+            <option>Kelas Reguler</option>
+            <option>Kelas Intensif</option>
+          </select>
+        </div>
+      </div>
+      <div class="auth-error" id="new-err" style="text-align:left;margin-bottom:8px;">Nama dan nomor peserta wajib
+        diisi.</div>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button class="btn btn-navy btn-full" onclick="addStudent()">Simpan Peserta →</button>
+        <button class="btn btn-outline" style="flex:0;padding:10px 16px;"
+          onclick="hideModal('modal-add-student')">Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EXIT -->
+  <div class="overlay" id="modal-exit">
+    <div class="modal">
+      <div class="modal-icon">⚠️</div>
+      <div class="modal-title">Keluar dari Sesi?</div>
+      <div class="modal-desc">Progress kamu akan hilang. Yakin ingin keluar?</div>
+      <div class="modal-btns">
+        <button class="btn btn-red btn-full" onclick="hideModal('modal-exit');showPage('p-dashboard',null)">Ya,
+          Keluar</button>
+        <button class="btn btn-outline btn-full" onclick="hideModal('modal-exit')">Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ══════════════════════════════════════════
+       DATA & STATE
+    ══════════════════════════════════════════ */
+    const CREDS = { member: 'user', admin: 'admin' };
+    const DEFAULT_STUDENTS = [
+      { name: 'Gusti Kadek Lingga', nomor: 'IPDN-2026-0012', kelas: 'Kelas Intensif', asal: 'Kendari' },
+      { name: 'Asyraf S. Kuengo', nomor: 'IPDN-2026-0023', kelas: 'Kelas Intensif', asal: 'Kendari' },
+      { name: 'Moch Cheza Aldidani.M', nomor: 'IPDN-2026-0047', kelas: 'Kelas Intensif', asal: 'Kendari' },
+      { name: 'Farah Dillah', nomor: 'IPDN-2026-0031', kelas: 'Kelas Intensif', asal: 'Kendari' },
+      { name: 'Dhea Fiqah Sakti', nomor: 'IPDN-2026-0058', kelas: 'Kelas Intensif', asal: 'Kendari' },
+      { name: 'Callysta Aurelia Thalita', nomor: 'IPDN-2026-0064', kelas: 'Kelas Intensif', asal: 'Kendari' },
+      { name: 'Salfazirahyani', nomor: 'IPDN-2026-0071', kelas: 'Kelas Intensif', asal: 'Kendari' },
+      { name: 'Nina Rahma', nomor: 'IPDN-2026-0082', kelas: 'Kelas Intensif', asal: 'Buton' },
+    ];
+
+    let currentRole = null;
+    let currentStudent = null;
+
+    /* ══════════════════════════════════════════
+       LOCALSTORAGE HELPERS
+    ══════════════════════════════════════════ */
+    function getStudents() {
+      const s = localStorage.getItem('psiko_students');
+      if (!s) { localStorage.setItem('psiko_students', JSON.stringify(DEFAULT_STUDENTS)); return DEFAULT_STUDENTS; }
+      return JSON.parse(s);
+    }
+    function saveStudents(list) { localStorage.setItem('psiko_students', JSON.stringify(list)); }
+
+    function getStudentData(name) {
+      const s = localStorage.getItem('psiko_data_' + name);
+      return s ? JSON.parse(s) : { sessions: [] };
+    }
+    function saveStudentData(name, data) { localStorage.setItem('psiko_data_' + name, JSON.stringify(data)); }
+
+    /* ══════════════════════════════════════════
+       AUTH FLOW
+    ══════════════════════════════════════════ */
+    function doLogin() {
+      const id = document.getElementById('auth-id').value.trim().toLowerCase();
+      const pw = document.getElementById('auth-pw').value;
+      const err = document.getElementById('auth-err');
+      if (CREDS[id] && CREDS[id] === pw) {
+        err.classList.remove('show');
+        currentRole = id;
+        if (id === 'admin') {
+          enterApp();
+        } else {
+          populateStudentDropdown();
+          document.getElementById('screen-login').style.display = 'none';
+          document.getElementById('screen-select').style.display = 'flex';
+        }
+      } else {
+        err.classList.add('show');
+      }
+    }
+
+    function doSelectUser() {
+      const sel = document.getElementById('student-select');
+      const err = document.getElementById('select-err');
+      if (!sel.value) { err.classList.add('show'); return; }
+      err.classList.remove('show');
+      currentStudent = getStudents().find(s => s.name === sel.value);
+      enterApp();
+    }
+
+    function backToLogin() {
+      document.getElementById('screen-select').style.display = 'none';
+      document.getElementById('screen-login').style.display = 'flex';
+    }
+
+    function enterApp() {
+      document.getElementById('screen-login').style.display = 'none';
+      document.getElementById('screen-select').style.display = 'none';
+      const appEl = document.getElementById('app');
+      appEl.style.display = 'flex';
+
+      if (currentRole === 'admin') {
+        document.getElementById('sb-avatar').textContent = 'AD';
+        document.getElementById('sb-name').textContent = 'Administrator';
+        document.getElementById('sb-role').textContent = 'Admin · Semua Kelas';
+        document.getElementById('nav-member-section').style.display = 'none';
+        document.getElementById('nav-admin-section').style.display = 'block';
+        renderAdminPage();
+        showPage('p-admin', null);
+      } else {
+        const s = currentStudent;
+        document.getElementById('sb-avatar').textContent = s.name.charAt(0);
+        document.getElementById('sb-name').textContent = s.name;
+        document.getElementById('sb-role').textContent = 'Capra · ' + s.kelas;
+        document.getElementById('nav-member-section').style.display = 'block';
+        document.getElementById('nav-admin-section').style.display = 'none';
+        loadStudentUI();
+        showPage('p-dashboard', document.querySelector('#nav-member-section .nav-item'));
+      }
+    }
+
+    function doLogout() {
+      currentRole = null;
+      currentStudent = null;
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('screen-login').style.display = 'flex';
+      document.getElementById('auth-id').value = '';
+      document.getElementById('auth-pw').value = '';
+      document.getElementById('auth-err').classList.remove('show');
+    }
+
+    function populateStudentDropdown() {
+      const sel = document.getElementById('student-select');
+      sel.innerHTML = '<option value="">— Pilih nama kamu —</option>';
+      getStudents().forEach(s => {
+        const o = document.createElement('option');
+        o.value = s.name;
+        o.textContent = s.name + '  ·  ' + s.kelas;
+        sel.appendChild(o);
+      });
+    }
+
+    /* ══════════════════════════════════════════
+       STUDENT UI LOADER
+    ══════════════════════════════════════════ */
+    function loadStudentUI() {
+      const s = currentStudent;
+      const data = getStudentData(s.name);
+      const sessions = data.sessions || [];
+      const examSessions = sessions.filter(x => x.mode === 'exam');
+      const total = sessions.length;
+      const avg = total ? Math.round(sessions.reduce((a, b) => a + b.score, 0) / total) : 0;
+      const best = total ? Math.max(...sessions.map(x => x.score)) : 0;
+
+      // Find weakest kolom from exam sessions
+      const kolomMap = {};
+      examSessions.forEach(ex => {
+        if (ex.kolomScores) Object.entries(ex.kolomScores).forEach(([k, v]) => {
+          if (!kolomMap[k]) kolomMap[k] = [];
+          kolomMap[k].push(v);
+        });
+      });
+      let weakKolom = '—', weakScore = 101;
+      Object.entries(kolomMap).forEach(([k, arr]) => {
+        const a = Math.round(arr.reduce((x, y) => x + y, 0) / arr.length);
+        if (a < weakScore) { weakScore = a; weakKolom = 'Kol.' + k; }
+      });
+
+      // Dashboard stats
+      document.getElementById('ds-total').textContent = total;
+      document.getElementById('ds-total-sub').textContent = examSessions.length + ' ujian · ' + (total - examSessions.length) + ' latihan';
+      document.getElementById('ds-avg').textContent = avg + '%';
+      document.getElementById('ds-avg-sub').textContent = total ? '—' : 'Belum ada data';
+      document.getElementById('ds-best').textContent = best + '%';
+      document.getElementById('ds-best-sub').textContent = best ? 'Skor tertinggi' : '—';
+      document.getElementById('ds-weak').textContent = weakKolom;
+      document.getElementById('ds-weak-sub').textContent = weakScore < 101 ? 'Rata-rata ' + weakScore + '%' : 'Belum ada data';
+
+      // Recent history (dashboard)
+      const recent = sessions.slice(-3).reverse();
+      const dsTbody = document.getElementById('ds-history-body');
+      dsTbody.innerHTML = recent.length ? recent.map(x => `
+    <tr>
+      <td><span class="mode-pill ${x.mode === 'exam' ? 'pill-exam' : 'pill-lat'}">${x.mode === 'exam' ? 'Ujian' : 'Latihan'}</span></td>
+      <td>${x.tes}</td><td>${x.tanggal}</td><td>${x.durasi}</td>
+      <td><span class="score-chip ${x.score >= 80 ? 'c-sage' : x.score >= 70 ? 'c-gold' : 'c-red'}">${x.score}%</span></td>
+    </tr>`).join('') :
+        '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">Belum ada sesi. Mulai latihan!</td></tr>';
+
+      // Riwayat full
+      const rwTbody = document.getElementById('rw-body');
+      rwTbody.innerHTML = sessions.length ? sessions.slice().reverse().map((x, i) => `
+    <tr>
+      <td style="color:var(--text-muted);font-size:11px;">${sessions.length - i}</td>
+      <td><span class="mode-pill ${x.mode === 'exam' ? 'pill-exam' : 'pill-lat'}">${x.mode === 'exam' ? 'Ujian' : 'Latihan'}</span></td>
+      <td>${x.tes}</td><td>${x.tanggal}</td><td>${x.durasi}</td>
+      <td style="color:var(--sage);font-weight:600;">${x.benar}</td>
+      <td style="color:var(--red);font-weight:600;">${x.salah}</td>
+      <td><span class="score-chip ${x.score >= 80 ? 'c-sage' : x.score >= 70 ? 'c-gold' : 'c-red'}">${x.score}%</span></td>
+    </tr>`).join('') :
+        '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:20px;">Belum ada riwayat.</td></tr>';
+
+      // Profile
+      document.getElementById('pf-avatar').textContent = s.name.charAt(0);
+      document.getElementById('pf-name').textContent = s.name;
+      document.getElementById('pf-role').textContent = 'Capra IPDN · ' + s.kelas;
+      document.getElementById('pf-total').textContent = total;
+      document.getElementById('pf-avg').textContent = avg + '%';
+      document.getElementById('pf-best').textContent = best + '%';
+      document.getElementById('pf-kelas').textContent = s.kelas;
+      document.getElementById('pf-nomor').textContent = s.nomor;
+      document.getElementById('pf-input-nama').value = s.name;
+      document.getElementById('pf-input-nomor').value = s.nomor;
+      document.getElementById('pf-input-kelas').value = s.kelas;
+      document.getElementById('pf-input-asal').value = s.asal || '—';
+
+      // Leaderboard
+      renderLeaderboard();
+    }
+
+    /* ══════════════════════════════════════════
+       LEADERBOARD
+    ══════════════════════════════════════════ */
+    function renderLeaderboard() {
+      const students = getStudents();
+      const ranked = students.map(s => {
+        const d = getStudentData(s.name);
+        const exams = (d.sessions || []).filter(x => x.mode === 'exam');
+        const avg = exams.length ? Math.round(exams.reduce((a, b) => a + b.score, 0) / exams.length) : 0;
+        return { ...s, avg, exams: exams.length };
+      }).filter(s => s.exams > 0).sort((a, b) => b.avg - a.avg);
+
+      const colors = ['linear-gradient(135deg,#f1c40f,#e67e22)', 'linear-gradient(135deg,#95a5a6,#7f8c8d)', 'linear-gradient(135deg,var(--gold),var(--gold-dark))'];
+      const rankClass = ['rank-1', 'rank-2', 'rank-3'];
+
+      const lbList = document.getElementById('lb-list');
+      if (!ranked.length) {
+        lbList.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">Belum ada data ujian.</div>';
+        document.getElementById('lb-my-rank').textContent = '—';
+        document.getElementById('lb-total-text').textContent = '—';
+        return;
+      }
+
+      lbList.innerHTML = ranked.map((s, i) => {
+        const isMe = currentStudent && s.name === currentStudent.name;
+        const rankNum = i + 1;
+        const medal = rankNum === 1 ? '🥇' : rankNum === 2 ? '🥈' : rankNum === 3 ? '🥉' : rankNum;
+        const barW = Math.round(s.avg);
+        const scoreCol = s.avg >= 80 ? 'c-sage' : s.avg >= 70 ? 'c-gold' : 'c-red';
+        return `<div class="lb-row${isMe ? ' me' : ''}">
+      <div class="lb-rank ${rankClass[i] || ''}">${medal}</div>
+      <div class="lb-avatar" style="background:${colors[i] || 'linear-gradient(135deg,#3498db,#2980b9)'};color:#fff;">${s.name.charAt(0)}</div>
+      <div class="lb-info"><div class="lb-name">${s.name}${isMe ? ' <span style="font-size:10px;color:var(--gold-dark);">(Kamu)</span>' : ''}</div><div class="lb-sub">${s.exams} ujian · avg ${s.avg}%</div></div>
+      <div class="lb-bar-wrap"><div class="lb-bar-fill" style="width:${barW}%;"></div></div>
+      <div class="lb-score ${scoreCol}">${s.avg}%</div>
+    </div>`;
+      }).join('');
+
+      const myRank = currentStudent ? ranked.findIndex(s => s.name === currentStudent.name) + 1 : 0;
+      document.getElementById('lb-my-rank').textContent = myRank > 0 ? '#' + myRank : '—';
+      document.getElementById('lb-total-text').textContent = 'dari ' + ranked.length + ' peserta aktif';
+    }
+
+    /* ══════════════════════════════════════════
+       ADMIN PAGE
+    ══════════════════════════════════════════ */
+    function renderAdminPage() {
+      const students = getStudents();
+      const allData = students.map(s => {
+        const d = getStudentData(s.name);
+        const sessions = d.sessions || [];
+        const exams = sessions.filter(x => x.mode === 'exam');
+        const avg = sessions.length ? Math.round(sessions.reduce((a, b) => a + b.score, 0) / sessions.length) : 0;
+        return { ...s, sessions: sessions.length, avg };
+      });
+
+      document.getElementById('adm-total-peserta').textContent = students.length;
+      const withData = allData.filter(s => s.sessions > 0);
+      const klassAvg = withData.length ? Math.round(withData.reduce((a, b) => a + b.avg, 0) / withData.length) : 0;
+      document.getElementById('adm-avg-kelas').textContent = klassAvg ? klassAvg + '%' : '—';
+      document.getElementById('adm-total-sesi').textContent = allData.reduce((a, b) => a + b.sessions, 0);
+      document.getElementById('adm-kolom-sulit').textContent = '—';
+      const timerInput = document.getElementById('adm-timer-input');
+      if (timerInput) {
+        timerInput.value = localStorage.getItem('psiko_admin_timer') || 180;
+      }
+
+      const tbody = document.getElementById('admin-student-body');
+      tbody.innerHTML = allData.map((s, i) => `
+    <tr>
+      <td style="color:var(--text-muted);font-size:11px;">${i + 1}</td>
+      <td><div style="font-weight:600;">${s.name}</div><div style="font-size:10px;color:var(--text-muted);">${s.nomor}</div></td>
+      <td>${s.nomor}</td>
+      <td><span class="mode-pill pill-lat">${s.kelas.replace('Kelas ', '')}</span></td>
+      <td>${s.asal || '—'}</td>
+      <td>${s.sessions}</td>
+      <td><span class="score-chip ${s.avg >= 80 ? 'c-sage' : s.avg >= 70 ? 'c-gold' : s.avg > 0 ? 'c-red' : 'c-navy'}">${s.avg > 0 ? s.avg + '%' : '—'}</span></td>
+      <td><button class="icon-btn" title="Hapus peserta" onclick="removeStudent('${s.name}')">🗑</button></td>
+    </tr>`).join('');
+    }
+
+    function addStudent() {
+      const nama = document.getElementById('new-nama').value.trim();
+      const nomor = document.getElementById('new-nomor').value.trim();
+      const asal = document.getElementById('new-asal').value.trim();
+      const kelas = document.getElementById('new-kelas').value;
+      const err = document.getElementById('new-err');
+      if (!nama || !nomor) { err.classList.add('show'); return; }
+      err.classList.remove('show');
+      const list = getStudents();
+      list.push({ name: nama, nomor, kelas, asal });
+      saveStudents(list);
+      document.getElementById('new-nama').value = '';
+      document.getElementById('new-nomor').value = '';
+      document.getElementById('new-asal').value = '';
+      hideModal('modal-add-student');
+      renderAdminPage();
+    }
+
+    function removeStudent(name) {
+      if (!confirm('Hapus ' + name + ' dari daftar peserta?')) return;
+      const list = getStudents().filter(s => s.name !== name);
+      saveStudents(list);
+      renderAdminPage();
+    }
+
+    function saveAdminTimer() {
+      const val = parseInt(document.getElementById('adm-timer-input').value);
+      if (val > 0) {
+        localStorage.setItem('psiko_admin_timer', val);
+        alert('Timer ujian berhasil disimpan: ' + val + ' detik');
+      }
+    }
+
+    /* ══════════════════════════════════════════
+       LATIHAN FLOW
+    ══════════════════════════════════════════ */
+    function startLatihan() {
+      const active = document.querySelectorAll('#kolamGrid .k-chip.active').length;
+      if (active === 0) {
+        const info = document.getElementById('latInfo');
+        info.textContent = '⚠ Pilih minimal 1 kolom dulu!';
+        info.className = 'info-box red';
+        return;
+      }
+      showPage('p-latihan-soal', null);
+    }
+
+    function finishLatihan() {
+      if (!currentStudent) return;
+      const chips = [...document.querySelectorAll('#kolamGrid .k-chip.active')].map(c => c.dataset.kolom);
+      const soal = chips.length * 500;
+      const benar = Math.floor(Math.random() * (soal * 0.4) + soal * 0.5);
+      const salah = soal - benar;
+      const score = Math.round(benar / soal * 100);
+      const now = new Date();
+      const tanggal = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' · ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      const durasi = (chips.length * 30) + ' mnt';
+      const tes = 'Paket ' + chips.join(', ') + ' · ' + soal + ' Soal';
+
+      const session = { mode: 'lat', tes, tanggal, durasi, benar, salah, score };
+      const data = getStudentData(currentStudent.name);
+      data.sessions.push(session);
+      saveStudentData(currentStudent.name, data);
+
+      // Update result page
+      document.getElementById('hl-date').textContent = 'Hasil Sesi Latihan · ' + tanggal;
+      document.getElementById('hl-name').textContent = currentStudent.name;
+      document.getElementById('hl-meta').textContent = tes + ' · ' + durasi;
+      document.getElementById('hl-benar').textContent = benar;
+      document.getElementById('hl-salah').textContent = salah;
+      document.getElementById('hl-skor').textContent = score + '%';
+      const grade = score >= 90 ? 'Sangat Baik' : score >= 80 ? 'Baik' : score >= 70 ? 'Cukup' : 'Perlu Ditingkatkan';
+      const gradeCol = score >= 80 ? 'c-sage' : score >= 70 ? 'c-gold' : 'c-red';
+      document.getElementById('hl-grade').className = 'perf-grade ' + gradeCol;
+      document.getElementById('hl-grade').textContent = grade;
+      document.getElementById('hl-note').textContent = 'Skor ' + score + '% dari ' + soal + ' soal';
+
+      loadStudentUI();
+      showPage('p-hasil-lat', null);
+    }
+
+    /* ══════════════════════════════════════════
+       EXAM FLOW
+    ══════════════════════════════════════════ */
+    let timerInterval = null;
+
+    function startExam() {
+      showPage('p-exam-soal', null);
+      let sec = parseInt(localStorage.getItem('psiko_admin_timer')) || 180;
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        sec--;
+        if (sec < 0) sec = 180;
+        const el = document.getElementById('e-timer-val');
+        if (el) {
+          el.textContent = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+          el.className = sec < 30 ? 'timer-urgent' : sec < 60 ? 'timer-warn' : 'timer-ok';
+        }
+      }, 1000);
+    }
+
+    function finishExam() {
+      clearInterval(timerInterval);
+      if (!currentStudent) return;
+      const paketVal = document.getElementById('examPaket') ? document.getElementById('examPaket').value : '1';
+      const isPaket1 = paketVal === '1';
+      const KOLOM = isPaket1 ? ['I','II','III','IV','V','VI','VII','VIII','IX','X'] : ['XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX'];
+      const kolomScores = {};
+      let totalBenar = 0;
+      KOLOM.forEach(k => {
+        const s = Math.round(Math.random() * 40 + 50);
+        kolomScores[k] = s;
+        totalBenar += Math.round(s / 100 * 50);
+      });
+      const soal = 500;
+      const benar = totalBenar;
+      const salah = soal - benar;
+      const score = Math.round(benar / soal * 100);
+      const now = new Date();
+      const tanggal = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' · ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      const durasi = '29 mnt';
+      const tes = 'Paket ' + paketVal + ' · 500 Soal';
+
+      const session = { mode: 'exam', tes, tanggal, durasi, benar, salah, score, kolomScores };
+      const data = getStudentData(currentStudent.name);
+      data.sessions.push(session);
+      saveStudentData(currentStudent.name, data);
+
+      // Result page
+      document.getElementById('he-date').textContent = 'Hasil Real Exam · ' + tanggal;
+      document.getElementById('he-name').textContent = currentStudent.name;
+      document.getElementById('he-meta').textContent = tes + ' · ' + durasi;
+      document.getElementById('he-benar').textContent = benar;
+      document.getElementById('he-salah').textContent = salah;
+      document.getElementById('he-skor').textContent = score + '%';
+      const grade = score >= 90 ? 'Sangat Baik' : score >= 80 ? 'Baik' : score >= 70 ? 'Cukup' : 'Perlu Ditingkatkan';
+      const gradeCol = score >= 80 ? 'c-sage' : score >= 70 ? 'c-gold' : 'c-red';
+      document.getElementById('he-grade').className = 'perf-grade ' + gradeCol;
+      document.getElementById('he-grade').textContent = grade;
+      document.getElementById('he-note').textContent = 'Skor ' + score + '% dari 500 soal';
+
+      // Kolom mini grid
+      const grid = document.getElementById('he-kolom-grid');
+      grid.innerHTML = KOLOM.map(k => {
+        const s = kolomScores[k];
+        const c = s >= 80 ? 'c-sage' : s >= 70 ? 'c-gold' : 'c-red';
+        return `<div class="km-cell"><div class="km-col">${k}</div><div class="km-score ${c}">${s}%</div></div>`;
+      }).join('');
+
+      loadStudentUI();
+      showPage('p-hasil-exam', null);
+    }
+
+    /* ══════════════════════════════════════════
+       PAGE NAV
+    ══════════════════════════════════════════ */
+    const pageConfig = {
+      'p-dashboard': { title: 'Dashboard', sub: 'Selamat datang kembali', actions: '<button class="topbar-btn primary" onclick="showPage(\'p-latihan\',null)">+ Mulai Latihan</button>' },
+      'p-latihan': { title: 'Sesi Latihan', sub: 'Pilih kolom dan konfigurasi latihan', actions: '<button class="topbar-btn" onclick="showPage(\'p-dashboard\',null)">← Kembali</button>' },
+      'p-latihan-soal': { title: 'Sesi Latihan', sub: 'Sedang berlangsung', actions: '<button class="topbar-btn danger" onclick="showModal(\'modal-exit\')">✕ Keluar</button>' },
+      'p-exam': { title: 'Real Exam', sub: 'Konfirmasi sebelum memulai', actions: '<button class="topbar-btn" onclick="showPage(\'p-dashboard\',null)">← Kembali</button>' },
+      'p-exam-soal': { title: 'Real Exam', sub: 'Sedang berlangsung', actions: '' },
+      'p-hasil-lat': { title: 'Hasil Latihan', sub: 'Sesi selesai', actions: '<button class="topbar-btn primary" onclick="showPage(\'p-latihan\',null)">↺ Latihan Lagi</button>' },
+      'p-hasil-exam': { title: 'Hasil Real Exam', sub: 'Ujian selesai', actions: '<button class="topbar-btn primary" onclick="showPage(\'p-leaderboard\',null)">🏆 Ranking</button>' },
+      'p-riwayat': { title: 'Riwayat Tes', sub: 'Semua sesi kamu', actions: '' },
+      'p-leaderboard': { title: 'Leaderboard', sub: 'Ranking kelas', actions: '' },
+      'p-profil': { title: 'Profil Saya', sub: 'Informasi akun', actions: '' },
+      'p-admin': { title: 'Panel Admin', sub: 'Manajemen peserta & analitik', actions: '<button class="topbar-btn primary" onclick="showModal(\'modal-add-student\')">+ Peserta</button>' },
+    };
+
+    function showPage(id, navEl) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const pg = document.getElementById(id);
+      if (pg) { pg.classList.add('active'); }
+      const cfg = pageConfig[id] || {};
+      document.getElementById('topbar-title').textContent = cfg.title || '';
+      const sub = cfg.sub || '';
+      document.getElementById('topbar-sub').textContent = currentStudent ? sub + (sub && currentStudent.name ? ' — ' + currentStudent.name : '') : sub;
+      document.getElementById('topbar-actions').innerHTML = cfg.actions || '';
+      if (navEl) {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        navEl.classList.add('active');
+      }
+      document.getElementById('content').scrollTop = 0;
+      document.getElementById('app').classList.toggle('exam-active', id === 'p-exam-soal');
+    }
+
+    /* ══════════════════════════════════════════
+       KOLOM CHIPS
+    ══════════════════════════════════════════ */
+    function toggleChip(el) {
+      el.classList.toggle('active');
+      const active = document.querySelectorAll('#kolamGrid .k-chip.active').length;
+      const soal = active * 500;
+      const info = document.getElementById('latInfo');
+      info.className = 'info-box green';
+      info.innerHTML = active
+        ? '<strong>' + active + ' paket dipilih · ' + soal + ' soal</strong> · Estimasi ' + (active * 30) + ' menit'
+        : '⚠ Pilih minimal 1 paket';
+    }
+
+    /* ══════════════════════════════════════════
+       ANSWER SELECT
+    ══════════════════════════════════════════ */
+    function selectLat(el) {
+      document.querySelectorAll('#l-ans .ans-btn').forEach(b => b.classList.remove('sel-lat'));
+      el.classList.add('sel-lat');
+    }
+    function selectExam(el) {
+      document.querySelectorAll('#e-ans .ans-btn').forEach(b => b.classList.remove('sel-exam'));
+      el.classList.add('sel-exam');
+    }
+
+    /* ══════════════════════════════════════════
+       MODAL
+    ══════════════════════════════════════════ */
+    function showModal(id) { document.getElementById(id).classList.add('show'); }
+    function hideModal(id) { document.getElementById(id).classList.remove('show'); }
+    document.querySelectorAll('.overlay').forEach(o => {
+      o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+    });
+  </script>
+</body>
+
+</html>
