@@ -2314,7 +2314,7 @@
         <input id="gen-paket-nomor" type="number" min="1" max="99" value="8"
           style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid var(--border);border-radius:4px;font-size:12px;">
       </div>
-      <div id="gen-kolom-list" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;max-height:260px;overflow-y:auto;"></div>
+      <div id="gen-kolom-list" style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-bottom:14px;max-height:280px;overflow-y:auto;padding-right:4px;"></div>
       <div id="gen-status" style="font-size:11px;color:var(--text-muted);min-height:18px;margin-bottom:10px;"></div>
       <div class="modal-btns">
         <button class="btn btn-gold btn-full" id="gen-submit-btn" onclick="generateAndPush()">Generate & Push ke DB</button>
@@ -3565,7 +3565,7 @@ function openGenPaketModal() {
     const div = document.createElement('div');
     div.innerHTML = `
       <label style="font-size:10px;color:var(--text-muted);display:block;margin-bottom:2px;">Kolom ${i}</label>
-      <select id="gen-kol-${i}" style="width:100%;padding:5px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;">
+      <select id="gen-kol-${i}" style="width:100%;padding:5px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:#fff;color:#222;appearance:auto;">
         ${setNames.map((n,j) => `<option value="${n}" ${j===((i-1)%setNames.length)?'selected':''}>${n}</option>`).join('')}
       </select>`;
     container.appendChild(div);
