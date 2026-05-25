@@ -8,6 +8,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --navy: #1B2B4B;
@@ -1783,13 +1784,9 @@
               <div class="card-bd">
                 <div class="section-label">Pilih Kolom (bisa lebih dari satu)</div>
                 <div class="kolom-grid" id="kolamGrid" style="grid-template-columns: 1fr 1fr;">
-                  <div class="k-chip active" data-kolom="1" onclick="toggleChip(this)">
-                    <div class="k-num">Paket 1</div>
+                  <div class="k-chip active" data-kolom="7" onclick="toggleChip(this)">
+                    <div class="k-num">Paket 7</div>
                     <div class="k-tema">Kolom I – X</div>
-                  </div>
-                  <div class="k-chip" data-kolom="2" onclick="toggleChip(this)">
-                    <div class="k-num">Paket 2</div>
-                    <div class="k-tema">Kolom XI – XX</div>
                   </div>
                 </div>
                 <div class="two-col">
@@ -1916,8 +1913,7 @@
                   <div style="border:1px solid var(--border);border-radius:2px;padding:14px;background:var(--cream);">
                     <div class="section-label">Pilih Paket</div>
                     <select id="examPaket" class="select-input" style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--navy);margin-top:4px;">
-                      <option value="1">Paket 1 (I - X)</option>
-                      <option value="2">Paket 2 (XI - XX)</option>
+                      <option value="7">Paket 7 (I - X)</option>
                     </select>
                   </div>
                   <div style="border:1px solid var(--border);border-radius:2px;padding:14px;background:var(--cream);">
@@ -2815,6 +2811,411 @@
       o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
     });
   </script>
+
+<!-- ══════════════════════════════════════════
+     CAT ENGINE — Supabase-connected
+     Override mock functions dari script atas
+══════════════════════════════════════════ -->
+<script>
+/* ── Supabase client ── */
+const SB_URL = 'https://ckqxehyyqkmvidmlronz.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrcXhlaHl5cWttdmlkbWxyb256Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTAwNzEsImV4cCI6MjA5NTI4NjA3MX0.JymBRKjq6dqLf1JiXvhOlPqygcQRFTDFg4b034pC96Q';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+
+/* ── Engine state ── */
+let eng = null;
+/*
+eng = {
+  mode: 'latihan'|'exam',
+  paketNomor: 7,
+  kolomList: [...],       // [{nomor,nama,roman,simbol,soal:[...]}]
+  kolomIdx: 0,            // kolom aktif sekarang
+  soalIdx: 0,             // soal ke-N dalam kolom aktif
+  answers: {},            // { "k1_s1": 'A', ... }
+  startTime: Date,
+  timerInterval: null,
+  timerSec: 180,
+}
+*/
+
+/* ── DB helpers ── */
+async function loadPaket(paketNomor) {
+  const { data: paketRow } = await sb.from('paket').select('id').eq('nomor', paketNomor).single();
+  if (!paketRow) throw new Error('Paket ' + paketNomor + ' tidak ditemukan atau belum aktif');
+
+  const { data: kolomRows } = await sb.from('kolom')
+    .select('id,nomor,nama,roman,simbol')
+    .eq('paket_id', paketRow.id)
+    .order('nomor');
+
+  const kolomList = [];
+  for (const k of kolomRows) {
+    const { data: soalRows } = await sb.from('soal')
+      .select('id,nomor,shown,kunci')
+      .eq('kolom_id', k.id)
+      .order('nomor');
+    kolomList.push({ ...k, soal: soalRows });
+  }
+  return kolomList;
+}
+
+async function saveSesi(paketNomor, mode, kolomDipilih, answers, startTime) {
+  const durasi = Math.round((Date.now() - startTime) / 1000);
+  let totalBenar = 0, totalSoal = 0;
+  const kolomScores = {};
+
+  for (const k of eng.kolomList) {
+    let benar = 0;
+    for (const s of k.soal) {
+      const key = `k${k.nomor}_s${s.nomor}`;
+      totalSoal++;
+      if (answers[key] === s.kunci) { benar++; totalBenar++; }
+    }
+    kolomScores[k.roman] = Math.round(benar / k.soal.length * 100);
+  }
+
+  const skor = totalSoal ? Math.round(totalBenar / totalSoal * 100) : 0;
+  const now = new Date();
+  const tanggal = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) +
+    ' · ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  const durasiMnt = Math.ceil(durasi / 60) + ' mnt';
+  const tes = 'Paket ' + paketNomor + ' · ' + totalSoal + ' Soal';
+
+  // Simpan ke localStorage (fallback; untuk data peserta tetap tersimpan)
+  if (currentStudent) {
+    const data = getStudentData(currentStudent.name);
+    data.sessions.push({
+      mode, tes, tanggal, durasi: durasiMnt,
+      benar: totalBenar, salah: totalSoal - totalBenar,
+      score: skor, kolomScores
+    });
+    saveStudentData(currentStudent.name, data);
+  }
+
+  return { totalBenar, totalSoal, skor, kolomScores, tanggal, durasiMnt, tes };
+}
+
+/* ── Render soal ── */
+function renderSoal() {
+  if (!eng) return;
+  const kolom = eng.kolomList[eng.kolomIdx];
+  const soal = kolom.soal[eng.soalIdx];
+  const isExam = eng.mode === 'exam';
+  const pfx = isExam ? 'e' : 'l';
+
+  // Progress text
+  const totalInKolom = kolom.soal.length;
+  const globalSoalNo = eng.kolomList.slice(0, eng.kolomIdx)
+    .reduce((a, k) => a + k.soal.length, 0) + eng.soalIdx + 1;
+  const totalSoal = eng.kolomList.reduce((a, k) => a + k.soal.length, 0);
+
+  const qnumEl = document.getElementById(pfx + '-qnum');
+  const qnum2El = document.getElementById(pfx + '-qnum2');
+  if (qnumEl) qnumEl.textContent = (eng.soalIdx + 1) + '/' + totalInKolom;
+  if (qnum2El) qnum2El.textContent = globalSoalNo;
+
+  // Badge kolom
+  const badgeEl = document.querySelector(isExam ? '.q-badge.exam' : '.q-kolom-badge');
+  if (badgeEl) badgeEl.textContent = (isExam ? 'Real Exam · ' : '') + kolom.nama + ' · Paket ' + eng.paketNomor;
+
+  // Progress bar
+  const prog = document.getElementById(pfx + '-progress');
+  if (prog) prog.style.width = Math.round(globalSoalNo / totalSoal * 100) + '%';
+
+  // Tabel kunci (simbol referensi)
+  const keyTbody = document.querySelector(isExam ? '#p-exam-soal .key-tbl tbody' : '#p-latihan-soal .key-tbl tbody');
+  if (keyTbody) {
+    keyTbody.innerHTML = '<tr>' +
+      ['A','B','C','D','E'].map(k => `<td>${kolom.simbol[k] || ''}</td>`).join('') +
+      '</tr>';
+  }
+
+  // Soal cells (4 simbol yang ditampilkan)
+  const soalGrid = document.querySelector(isExam ? '#p-exam-soal .soal-grid' : '#p-latihan-soal .soal-grid');
+  if (soalGrid) {
+    soalGrid.innerHTML = soal.shown.map(sym => `<div class="soal-cell">${sym}</div>`).join('');
+  }
+
+  // Reset semua answer button
+  const ansGrid = document.getElementById(pfx + '-ans');
+  if (ansGrid) {
+    ansGrid.querySelectorAll('.ans-btn').forEach(b => {
+      b.classList.remove('sel-lat', 'sel-exam', 'ans-correct', 'ans-wrong');
+    });
+    // Tandai jika sudah pernah jawab soal ini
+    const prevAns = eng.answers[`k${kolom.nomor}_s${soal.nomor}`];
+    if (prevAns) {
+      const btn = [...ansGrid.querySelectorAll('.ans-btn')].find(b => b.dataset.key === prevAns);
+      if (btn) btn.classList.add(isExam ? 'sel-exam' : 'sel-lat');
+    }
+  }
+
+  // Update kolom nav (jika ada)
+  document.querySelectorAll('.col-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (parseInt(btn.dataset.kolom) === kolom.nomor) btn.classList.add('active');
+    if (parseInt(btn.dataset.kolom) < kolom.nomor) btn.classList.add('done');
+  });
+}
+
+/* ── Submit jawaban & advance ── */
+function submitAnswer(key) {
+  if (!eng) return;
+  const kolom = eng.kolomList[eng.kolomIdx];
+  const soal = kolom.soal[eng.soalIdx];
+  const ansKey = `k${kolom.nomor}_s${soal.nomor}`;
+  eng.answers[ansKey] = key;
+
+  // Visual feedback brief (100ms) lalu advance
+  const pfx = eng.mode === 'exam' ? 'e' : 'l';
+  const ansGrid = document.getElementById(pfx + '-ans');
+  const btn = [...ansGrid.querySelectorAll('.ans-btn')].find(b => b.dataset.key === key);
+  if (btn) {
+    btn.classList.add(key === soal.kunci ? 'ans-correct' : 'ans-wrong');
+  }
+
+  setTimeout(() => {
+    eng.soalIdx++;
+    if (eng.soalIdx >= kolom.soal.length) {
+      // Pindah ke kolom berikutnya
+      eng.kolomIdx++;
+      eng.soalIdx = 0;
+      if (eng.kolomIdx >= eng.kolomList.length) {
+        // Semua soal selesai
+        if (eng.mode === 'latihan') { _finishLatihan(); }
+        else { _finishExam(); }
+        return;
+      }
+    }
+    renderSoal();
+  }, 120);
+}
+
+/* ── Override selectLat & selectExam ── */
+function selectLat(el, key) {
+  if (eng && eng.mode === 'latihan') { submitAnswer(key); return; }
+  // fallback lama
+  document.querySelectorAll('#l-ans .ans-btn').forEach(b => b.classList.remove('sel-lat'));
+  el.classList.add('sel-lat');
+}
+function selectExam(el, key) {
+  if (eng && eng.mode === 'exam') { submitAnswer(key); return; }
+  document.querySelectorAll('#e-ans .ans-btn').forEach(b => b.classList.remove('sel-exam'));
+  el.classList.add('sel-exam');
+}
+
+/* ── Timer ── */
+function startTimer(totalSec, onTick, onExpire) {
+  let remaining = totalSec;
+  onTick(remaining);
+  eng.timerInterval = setInterval(() => {
+    remaining--;
+    onTick(remaining);
+    if (remaining <= 0) {
+      clearInterval(eng.timerInterval);
+      onExpire();
+    }
+  }, 1000);
+}
+
+function formatTimer(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m + ':' + String(s).padStart(2, '0');
+}
+
+/* ── Start Latihan (override) ── */
+async function startLatihan() {
+  const active = document.querySelectorAll('#kolamGrid .k-chip.active');
+  if (active.length === 0) {
+    const info = document.getElementById('latInfo');
+    info.textContent = '⚠ Pilih minimal 1 kolom dulu!';
+    info.className = 'info-box red';
+    return;
+  }
+
+  // Loading state
+  const btn = document.querySelector('#p-latihan .btn-gold');
+  if (btn) { btn.textContent = 'Memuat soal...'; btn.disabled = true; }
+
+  try {
+    // Ambil paket chips yang dipilih → paket nomor (chip data-kolom = paket nomor)
+    const paketNomors = [...active].map(c => parseInt(c.dataset.kolom));
+    const paketNomor = paketNomors[0]; // latihan pakai paket pertama yang dipilih
+
+    const kolomList = await loadPaket(paketNomor);
+
+    eng = {
+      mode: 'latihan',
+      paketNomor,
+      kolomList,
+      kolomIdx: 0,
+      soalIdx: 0,
+      answers: {},
+      startTime: Date.now(),
+      timerInterval: null,
+    };
+
+    // Timer latihan (opsional)
+    const timerSec = parseInt(document.getElementById('timerMode').value) || 0;
+    if (timerSec > 0) {
+      const timerEl = document.querySelector('#p-latihan-soal .timer-display span:last-child');
+      startTimer(timerSec * kolomList.length, (rem) => {
+        if (timerEl) timerEl.textContent = formatTimer(rem);
+      }, () => { _finishLatihan(); });
+    }
+
+    showPage('p-latihan-soal', null);
+    renderSoal();
+  } catch (err) {
+    alert('Gagal memuat soal: ' + err.message);
+  } finally {
+    if (btn) { btn.textContent = 'Mulai Sesi Latihan →'; btn.disabled = false; }
+  }
+}
+
+/* ── Finish Latihan (internal) ── */
+async function _finishLatihan() {
+  if (!eng) return;
+  if (eng.timerInterval) clearInterval(eng.timerInterval);
+  const { totalBenar, totalSoal, skor, kolomScores, tanggal, durasiMnt, tes } = await saveSesi(
+    eng.paketNomor, 'lat', null, eng.answers, eng.startTime
+  );
+
+  document.getElementById('hl-date').textContent = 'Hasil Sesi Latihan · ' + tanggal;
+  document.getElementById('hl-name').textContent = currentStudent ? currentStudent.name : '—';
+  document.getElementById('hl-meta').textContent = tes + ' · ' + durasiMnt;
+  document.getElementById('hl-benar').textContent = totalBenar;
+  document.getElementById('hl-salah').textContent = totalSoal - totalBenar;
+  document.getElementById('hl-skor').textContent = skor + '%';
+  const grade = skor >= 90 ? 'Sangat Baik' : skor >= 80 ? 'Baik' : skor >= 70 ? 'Cukup' : 'Perlu Ditingkatkan';
+  const gradeCol = skor >= 80 ? 'c-sage' : skor >= 70 ? 'c-gold' : 'c-red';
+  document.getElementById('hl-grade').className = 'perf-grade ' + gradeCol;
+  document.getElementById('hl-grade').textContent = grade;
+  document.getElementById('hl-note').textContent = 'Skor ' + skor + '% dari ' + totalSoal + ' soal';
+
+  loadStudentUI();
+  showPage('p-hasil-lat', null);
+  eng = null;
+}
+
+/* Tombol "Selesai & Lihat Hasil" tetap bisa dipakai untuk keluar paksa */
+function finishLatihan() {
+  if (eng && eng.mode === 'latihan') { _finishLatihan(); }
+}
+
+/* ── Start Exam (override) ── */
+async function startExam() {
+  const paketNomor = parseInt(document.getElementById('examPaket').value);
+
+  // Loading
+  const btn = document.querySelector('#p-exam .btn-red');
+  if (btn) { btn.textContent = 'Memuat soal...'; btn.disabled = true; }
+
+  try {
+    const kolomList = await loadPaket(paketNomor);
+
+    eng = {
+      mode: 'exam',
+      paketNomor,
+      kolomList,
+      kolomIdx: 0,
+      soalIdx: 0,
+      answers: {},
+      startTime: Date.now(),
+      timerInterval: null,
+    };
+
+    const timerSec = parseInt(localStorage.getItem('psiko_admin_timer') || '180');
+    const timerEl = document.getElementById('e-timer-val');
+    startTimer(timerSec, (rem) => {
+      if (timerEl) {
+        timerEl.textContent = formatTimer(rem);
+        timerEl.style.color = rem <= 30 ? 'var(--red)' : '';
+      }
+    }, () => {
+      // Timer habis → pindah kolom berikutnya
+      eng.kolomIdx++;
+      eng.soalIdx = 0;
+      if (eng.kolomIdx >= eng.kolomList.length) { _finishExam(); return; }
+      clearInterval(eng.timerInterval);
+      startTimer(timerSec, (rem) => {
+        if (timerEl) timerEl.textContent = formatTimer(rem);
+      }, arguments.callee);
+      renderSoal();
+    });
+
+    showPage('p-exam-soal', null);
+    renderSoal();
+  } catch (err) {
+    alert('Gagal memuat soal: ' + err.message);
+  } finally {
+    if (btn) { btn.textContent = 'Mulai Ujian Sekarang →'; btn.disabled = false; }
+  }
+}
+
+/* ── Finish Exam (internal) ── */
+async function _finishExam() {
+  if (!eng) return;
+  if (eng.timerInterval) clearInterval(eng.timerInterval);
+  const { totalBenar, totalSoal, skor, kolomScores, tanggal, durasiMnt, tes } = await saveSesi(
+    eng.paketNomor, 'exam', null, eng.answers, eng.startTime
+  );
+
+  document.getElementById('he-date').textContent = 'Hasil Real Exam · ' + tanggal;
+  document.getElementById('he-name').textContent = currentStudent ? currentStudent.name : '—';
+  document.getElementById('he-meta').textContent = tes + ' · ' + durasiMnt;
+  document.getElementById('he-benar').textContent = totalBenar;
+  document.getElementById('he-salah').textContent = totalSoal - totalBenar;
+  document.getElementById('he-skor').textContent = skor + '%';
+  const grade = skor >= 90 ? 'Sangat Baik' : skor >= 80 ? 'Baik' : skor >= 70 ? 'Cukup' : 'Perlu Ditingkatkan';
+  const gradeCol = skor >= 80 ? 'c-sage' : skor >= 70 ? 'c-gold' : 'c-red';
+  document.getElementById('he-grade').className = 'perf-grade ' + gradeCol;
+  document.getElementById('he-grade').textContent = grade;
+  document.getElementById('he-note').textContent = 'Skor ' + skor + '% dari ' + totalSoal + ' soal';
+
+  // Kolom score grid
+  const grid = document.getElementById('he-kolom-grid');
+  if (grid) {
+    grid.innerHTML = Object.entries(kolomScores).map(([roman, s]) => {
+      const c = s >= 80 ? 'c-sage' : s >= 70 ? 'c-gold' : 'c-red';
+      return `<div class="km-cell"><div class="km-col">${roman}</div><div class="km-score ${c}">${s}%</div></div>`;
+    }).join('');
+  }
+
+  loadStudentUI();
+  showPage('p-hasil-exam', null);
+  eng = null;
+}
+
+/* ── Patch ans-btn: tambah data-key attribute ── */
+document.addEventListener('DOMContentLoaded', () => {
+  ['l-ans','e-ans'].forEach(id => {
+    const grid = document.getElementById(id);
+    if (!grid) return;
+    ['A','B','C','D','E'].forEach((k, i) => {
+      const btn = grid.querySelectorAll('.ans-btn')[i];
+      if (btn) btn.dataset.key = k;
+    });
+  });
+
+  // Update examPaket options dari DB
+  sb.from('paket').select('nomor,nama').eq('aktif', false).order('nomor')
+    .then(({ data }) => {
+      // Aktif false = draft, tapi kita tampilkan semua untuk testing
+      // Nanti kalau sudah ada paket aktif, ganti eq('aktif',true)
+    });
+});
+
+/* ── CSS tambahan untuk feedback jawaban ── */
+const style = document.createElement('style');
+style.textContent = `
+  .ans-btn.ans-correct { background: var(--sage) !important; color: white !important; border-color: var(--sage) !important; }
+  .ans-btn.ans-wrong   { background: var(--red)  !important; color: white !important; border-color: var(--red)  !important; }
+  .ans-btn             { transition: background .1s, border-color .1s; }
+`;
+document.head.appendChild(style);
+</script>
 </body>
 
 </html>
