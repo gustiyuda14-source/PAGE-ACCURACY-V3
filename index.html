@@ -3532,7 +3532,7 @@ async function pushPaketToDB(paket) {
   // 2. Insert semua kolom sekaligus lalu ambil id-nya
   const kolomRows = paket.kolom.map(kol => ({
     paket_id: pData.id, nomor: kol.nomor,
-    nama: kol.symbol_set, simbol: SYMBOL_SETS[kol.symbol_set]
+    nama: kol.symbol_set, roman: 'K' + kol.nomor, simbol: SYMBOL_SETS[kol.symbol_set]
   }));
   const { data: kData, error: kErr } = await sb.from('kolom')
     .insert(kolomRows).select('id,nomor');
