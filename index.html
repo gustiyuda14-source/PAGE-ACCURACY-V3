@@ -3002,11 +3002,10 @@ async function removeStudentDB(userId, nama) {
   await refreshAdminStudentList();
 }
 
-/* ── Override renderAdminPage: load dari Supabase ── */
-const _origRenderAdmin = typeof renderAdminPage === 'function' ? renderAdminPage : null;
+/* ── renderAdminPage: dipanggil saat admin panel dibuka ── */
 async function renderAdminPage() {
-  if (_origRenderAdmin) _origRenderAdmin();
   await refreshAdminStudentList();
+  loadPaketList();
 }
 
 /* ── Sembunyikan screen-select (tidak perlu dropdown lagi) ── */
