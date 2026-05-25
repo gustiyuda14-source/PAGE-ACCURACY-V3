@@ -3639,12 +3639,16 @@ async function togglePaketAktif(id, current) {
 }
 
 
-// Hook loadPaketList ke showPage agar trigger saat admin panel dibuka
-const _origShowPage = window.showPage;
-window.showPage = function(id, navEl) {
-  _origShowPage(id, navEl);
-  if (id === 'p-admin') loadPaketList();
-};
+// Load paket list saat DOMContentLoaded dan saat nav admin diklik
+document.addEventListener('DOMContentLoaded', () => {
+  // Patch nav item admin agar trigger loadPaketList
+  document.querySelectorAll('.nav-item').forEach(el => {
+    if (el.getAttribute('onclick') && el.getAttribute('onclick').includes('p-admin')) {
+      const orig = el.getAttribute('onclick');
+      el.setAttribute('onclick', orig + '; loadPaketList()');
+    }
+  });
+});
 
 /* ── CSS tambahan untuk feedback jawaban ── */
 const style = document.createElement('style');
