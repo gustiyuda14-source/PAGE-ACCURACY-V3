@@ -2234,24 +2234,31 @@
             </div>
           </div>
 
+          <!-- SECTION: GENERATE PAKET -->
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:4px;margin-bottom:16px;overflow:hidden;">
+            <div style="background:var(--navy-dark);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <div style="font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);">Generator Bank Soal</div>
+                <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:2px;">Generate paket baru otomatis & push ke database</div>
+              </div>
+              <button class="btn btn-gold" style="font-size:10px;padding:7px 14px;" onclick="showModal('modal-gen-paket')">+ Generate Paket Baru</button>
+            </div>
+            <div style="padding:12px 16px;" id="paket-list-wrap">
+              <div style="font-size:11px;color:var(--text-muted);text-align:center;padding:12px 0;" id="paket-list-empty">Memuat daftar paket...</div>
+              <div id="paket-list-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;"></div>
+            </div>
+          </div>
+
+          <!-- SECTION: DAFTAR PESERTA -->
           <div class="card">
             <div style="background:var(--navy);padding:10px 16px;">
-              <div
-                style="font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);">
-                Daftar Peserta</div>
+              <div style="font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);">Daftar Peserta</div>
             </div>
             <div style="overflow-x:auto;">
               <table class="admin-table">
                 <thead>
                   <tr>
-                    <th>#</th>
-                    <th>Nama</th>
-                    <th>No. Peserta</th>
-                    <th>Kelas</th>
-                    <th>Asal</th>
-                    <th>Total Sesi</th>
-                    <th>Avg Skor</th>
-                    <th></th>
+                    <th>#</th><th>Nama</th><th>No. Peserta</th><th>Kelas</th><th>Asal</th><th>Total Sesi</th><th>Avg Skor</th><th></th>
                   </tr>
                 </thead>
                 <tbody id="admin-student-body"></tbody>
@@ -2294,6 +2301,24 @@
         <button class="btn btn-navy btn-full" onclick="addStudent()">Simpan Peserta →</button>
         <button class="btn btn-outline" style="flex:0;padding:10px 16px;"
           onclick="hideModal('modal-add-student')">Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: GENERATE PAKET BARU -->
+  <div class="overlay" id="modal-gen-paket">
+    <div class="modal" style="max-width:520px;width:94%;">
+      <div class="modal-title" style="font-size:14px;">Generate Paket Baru</div>
+      <div style="text-align:left;margin-bottom:12px;">
+        <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Nomor Paket</label>
+        <input id="gen-paket-nomor" type="number" min="1" max="99" value="8"
+          style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid var(--border);border-radius:4px;font-size:12px;">
+      </div>
+      <div id="gen-kolom-list" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;max-height:260px;overflow-y:auto;"></div>
+      <div id="gen-status" style="font-size:11px;color:var(--text-muted);min-height:18px;margin-bottom:10px;"></div>
+      <div class="modal-btns">
+        <button class="btn btn-gold btn-full" id="gen-submit-btn" onclick="generateAndPush()">Generate & Push ke DB</button>
+        <button class="btn btn-outline btn-full" onclick="hideModal('modal-gen-paket')">Batal</button>
       </div>
     </div>
   </div>
@@ -3408,6 +3433,215 @@ document.addEventListener('DOMContentLoaded', () => {
       // Aktif false = draft, tapi kita tampilkan semua untuk testing
       // Nanti kalau sudah ada paket aktif, ganti eq('aktif',true)
     });
+});
+
+/* ════════════════════════════════════════════════════
+   GENERATOR ENGINE  –  Admin: Generate Paket Baru
+════════════════════════════════════════════════════ */
+const SYMBOL_SETS = {
+  'Cuaca'      :['🌪️','⛈️','🌈','🌊','❄️'],
+  'Tangan'     :['👎','👌','✋','👍','✊'],
+  'Bendera'    :['🏴','🎌','🏁','🏳️','🚩'],
+  'Buah'       :['🍎','🍊','🍋','🍇','🍓'],
+  'Hewan'      :['🐶','🐱','🐭','🐹','🐰'],
+  'Transport'  :['🚗','🚕','🚌','🚎','🏎️'],
+  'Bola Olahraga':['⚽','🏀','🏈','⚾','🎾'],
+  'Planet'     :['🌍','🌎','🌏','🌑','🌕'],
+  'Makanan'    :['🍕','🍔','🌮','🍜','🍣'],
+  'Angka Romawi':['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ'],
+  'Huruf Yunani':['α','β','γ','δ','ε'],
+  'Panah'      :['←','→','↑','↓','↔'],
+  'Bentuk'     :['■','●','▲','★','◆'],
+  'Simbol Musik':['♩','♪','♫','♬','♭'],
+  'Zodiak'     :['♈','♉','♊','♋','♌'],
+  'Kartu'      :['♠','♥','♦','♣','🃏'],
+  'Mata Angin' :['N','S','E','W','NE'],
+  'Warna Kotak':['🟥','🟧','🟨','🟩','🟦'],
+  'Waktu'      :['🕐','🕒','🕕','🕗','🕙'],
+  'Cuaca 2'    :['☀️','🌤️','⛅','🌧️','🌩️'],
+};
+
+function seededRand(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+}
+
+function shuffleArr(arr, rng) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function generateSoalJS(symbols, jumlah, seed) {
+  const rng = seededRand(seed || 42);
+  const ansKeys = ['A','B','C','D','E'];
+  const perKey = Math.floor(jumlah / 5);
+  const dist = {};
+  ansKeys.forEach(k => dist[k] = perKey);
+  let rem = jumlah - perKey * 5;
+  for (let i = 0; i < rem; i++) dist[ansKeys[i]]++;
+
+  const pool = [];
+  ansKeys.forEach(k => {
+    for (let n = 0; n < dist[k]; n++) pool.push(k);
+  });
+  const shuffledPool = shuffleArr(pool, rng);
+
+  return shuffledPool.map((ansKey, idx) => {
+    const answerSym = symbols[ansKeys.indexOf(ansKey)];
+    const others = symbols.filter(s => s !== answerSym);
+    const shown4 = shuffleArr(others, rng);
+    return { nomor: idx + 1, shown: shown4, kunci: ansKey };
+  });
+}
+
+function generatePaketJS(nomor, kolomDefs) {
+  const kolom = kolomDefs.map((setName, i) => {
+    const syms = SYMBOL_SETS[setName];
+    const soal = generateSoalJS(syms, 50, nomor * 100 + i);
+    return { nomor: i + 1, symbol_set: setName, soal };
+  });
+  return { nomor, nama: `Paket ${nomor}`, kolom };
+}
+
+function validatePaketJS(paket) {
+  for (const kol of paket.kolom) {
+    const setName = kol.symbol_set;
+    const syms = SYMBOL_SETS[setName];
+    for (const s of kol.soal) {
+      const missing = syms.find(sym => !s.shown.includes(sym));
+      const expectedKey = ['A','B','C','D','E'][syms.indexOf(missing)];
+      if (expectedKey !== s.kunci) return false;
+    }
+  }
+  return true;
+}
+
+async function pushPaketToDB(paket) {
+  // 1. Insert paket
+  const { data: pData, error: pErr } = await sb.from('paket')
+    .insert({ nomor: paket.nomor, nama: paket.nama, aktif: false })
+    .select().single();
+  if (pErr) throw new Error('Insert paket: ' + pErr.message);
+
+  for (const kol of paket.kolom) {
+    // 2. Insert kolom
+    const { data: kData, error: kErr } = await sb.from('kolom')
+      .insert({ paket_id: pData.id, nomor: kol.nomor, symbol_set: kol.symbol_set })
+      .select().single();
+    if (kErr) throw new Error(`Insert kolom ${kol.nomor}: ` + kErr.message);
+
+    // 3. Insert soal in batches of 50
+    const rows = kol.soal.map(s => ({
+      kolom_id: kData.id, nomor: s.nomor,
+      shown: s.shown, kunci: s.kunci
+    }));
+    const { error: sErr } = await sb.from('soal').insert(rows);
+    if (sErr) throw new Error(`Insert soal kolom ${kol.nomor}: ` + sErr.message);
+  }
+  return pData.id;
+}
+
+function openGenPaketModal() {
+  // Populate kolom selectors
+  const container = document.getElementById('gen-kolom-list');
+  container.innerHTML = '';
+  const setNames = Object.keys(SYMBOL_SETS);
+  for (let i = 1; i <= 10; i++) {
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <label style="font-size:10px;color:var(--text-muted);display:block;margin-bottom:2px;">Kolom ${i}</label>
+      <select id="gen-kol-${i}" style="width:100%;padding:5px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;">
+        ${setNames.map((n,j) => `<option value="${n}" ${j===((i-1)%setNames.length)?'selected':''}>${n}</option>`).join('')}
+      </select>`;
+    container.appendChild(div);
+  }
+  document.getElementById('gen-status').textContent = '';
+  showModal('modal-gen-paket');
+}
+
+async function generateAndPush() {
+  const btn = document.getElementById('gen-submit-btn');
+  const status = document.getElementById('gen-status');
+  const nomor = parseInt(document.getElementById('gen-paket-nomor').value);
+  if (!nomor || nomor < 1) { status.textContent = '⚠ Nomor paket tidak valid'; return; }
+
+  const kolomDefs = [];
+  for (let i = 1; i <= 10; i++) {
+    kolomDefs.push(document.getElementById(`gen-kol-${i}`).value);
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+  status.textContent = 'Membuat soal...';
+
+  try {
+    const paket = generatePaketJS(nomor, kolomDefs);
+    const valid = validatePaketJS(paket);
+    if (!valid) throw new Error('Validasi soal gagal — cek logic generator');
+
+    status.textContent = 'Pushing ke database...';
+    await pushPaketToDB(paket);
+
+    status.style.color = 'var(--sage)';
+    status.textContent = `✓ Paket ${nomor} berhasil dibuat & disimpan ke DB`;
+    btn.textContent = 'Selesai!';
+    setTimeout(() => {
+      hideModal('modal-gen-paket');
+      loadPaketList();
+    }, 1200);
+  } catch(e) {
+    status.style.color = 'var(--red)';
+    status.textContent = '✗ ' + e.message;
+    btn.disabled = false;
+    btn.textContent = 'Generate & Push ke DB';
+  }
+}
+
+async function loadPaketList() {
+  const grid = document.getElementById('paket-list-grid');
+  const empty = document.getElementById('paket-list-empty');
+  if (!grid) return;
+  const { data, error } = await sb.from('paket').select('id,nomor,nama,aktif').order('nomor');
+  if (error || !data) { if(empty) empty.textContent = 'Gagal memuat daftar paket'; return; }
+  if (empty) empty.style.display = 'none';
+  grid.innerHTML = data.map(p => `
+    <div style="border:1px solid var(--border);border-radius:4px;padding:10px;background:${p.aktif?'#f0faf4':'var(--white)'}">
+      <div style="font-weight:700;font-size:13px;color:var(--navy)">Paket ${p.nomor}</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px">${p.nama}</div>
+      <button onclick="togglePaketAktif(${p.id},${p.aktif})"
+        class="btn ${p.aktif?'btn-outline':'btn-gold'}" style="font-size:10px;padding:4px 10px;width:100%">
+        ${p.aktif ? '⏸ Nonaktifkan' : '▶ Aktifkan'}
+      </button>
+    </div>`).join('');
+}
+
+async function togglePaketAktif(id, current) {
+  await sb.from('paket').update({ aktif: !current }).eq('id', id);
+  loadPaketList();
+}
+
+// Override showModal to populate kolom selectors for gen-paket
+const _origShowModal = window.showModal;
+window.showModal = function(id) {
+  if (id === 'modal-gen-paket') { openGenPaketModal(); return; }
+  _origShowModal(id);
+};
+
+// Load paket list when admin panel is shown
+document.addEventListener('DOMContentLoaded', () => {
+  const obs = new MutationObserver(() => {
+    const ap = document.getElementById('p-admin');
+    if (ap && ap.style.display !== 'none') loadPaketList();
+  });
+  const ap = document.getElementById('p-admin');
+  if (ap) obs.observe(ap, { attributes: true, attributeFilter: ['style'] });
 });
 
 /* ── CSS tambahan untuk feedback jawaban ── */
