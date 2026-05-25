@@ -2643,7 +2643,7 @@
       const val = parseInt(document.getElementById('adm-timer-input').value);
       if (val > 0) {
         localStorage.setItem('psiko_admin_timer', val);
-        alert('Timer ujian berhasil disimpan: ' + val + ' detik');
+        showToast('Timer tersimpan: ' + val + ' detik', 'success');
       }
     }
 
@@ -2992,7 +2992,7 @@ async function resetPassword(userId, nama) {
   const newPw = prompt('Password baru untuk ' + nama + ':');
   if (!newPw) return;
   await sb.from('users').update({ password_hash: newPw }).eq('id', userId);
-  alert('Password berhasil direset untuk ' + nama);
+  showToast('Password direset untuk ' + nama, 'success');
 }
 
 /* ── Hapus peserta dari DB ── */
@@ -3295,7 +3295,7 @@ async function startLatihan() {
     showPage('p-latihan-soal', null);
     renderSoal();
   } catch (err) {
-    alert('Gagal memuat soal: ' + err.message);
+    showToast('Gagal memuat soal: ' + err.message, 'error');
   } finally {
     if (btn) { btn.textContent = 'Mulai Sesi Latihan →'; btn.disabled = false; }
   }
@@ -3375,7 +3375,7 @@ async function startExam() {
     showPage('p-exam-soal', null);
     renderSoal();
   } catch (err) {
-    alert('Gagal memuat soal: ' + err.message);
+    showToast('Gagal memuat soal: ' + err.message, 'error');
   } finally {
     if (btn) { btn.textContent = 'Mulai Ujian Sekarang →'; btn.disabled = false; }
   }
@@ -3622,14 +3622,20 @@ async function loadPaketList() {
   const grid = document.getElementById('paket-list-grid');
   const empty = document.getElementById('paket-list-empty');
   if (!grid) return;
+  if (empty) { empty.textContent = 'Memuat...'; empty.style.display = 'block'; }
+  grid.innerHTML = '';
   const { data, error } = await sb.from('paket').select('id,nomor,nama,aktif').order('nomor');
-  if (error || !data) { if(empty) empty.textContent = 'Gagal memuat daftar paket'; return; }
+  if (error || !data) {
+    if (empty) { empty.textContent = 'Gagal memuat daftar paket'; }
+    showToast('Gagal memuat daftar paket', 'error');
+    return;
+  }
   if (empty) empty.style.display = 'none';
   grid.innerHTML = data.map(p => `
     <div style="border:1px solid var(--border);border-radius:4px;padding:10px;background:${p.aktif?'#f0faf4':'var(--white)'}">
       <div style="font-weight:700;font-size:13px;color:var(--navy)">Paket ${p.nomor}</div>
       <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px">${p.nama}</div>
-      <button onclick="togglePaketAktif(${p.id},${p.aktif})"
+      <button onclick="togglePaketAktif('${p.id}',${p.aktif})"
         class="btn ${p.aktif?'btn-outline':'btn-gold'}" style="font-size:10px;padding:4px 10px;width:100%">
         ${p.aktif ? '⏸ Nonaktifkan' : '▶ Aktifkan'}
       </button>
@@ -3637,7 +3643,18 @@ async function loadPaketList() {
 }
 
 async function togglePaketAktif(id, current) {
-  await sb.from('paket').update({ aktif: !current }).eq('id', id);
+  const btn = event.currentTarget;
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳';
+  const { error } = await sb.from('paket').update({ aktif: !current }).eq('id', id);
+  if (error) {
+    showToast('Gagal update: ' + error.message, 'error');
+    btn.disabled = false;
+    btn.textContent = origText;
+    return;
+  }
+  showToast(current ? 'Paket dinonaktifkan' : 'Paket diaktifkan ✓', 'success');
   loadPaketList();
 }
 
@@ -3653,12 +3670,39 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-/* ── CSS tambahan untuk feedback jawaban ── */
+/* ── Toast system ── */
+function showToast(msg, type = 'info', duration = 2800) {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const el = document.createElement('div');
+  el.className = 'toast toast-' + type;
+  const icon = type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ';
+  el.innerHTML = `<span style="font-size:14px">${icon}</span> ${msg}`;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(8px)';
+    setTimeout(() => el.remove(), 350);
+  }, duration);
+}
+
+/* ── CSS: toast + disabled button ── */
 const style = document.createElement('style');
 style.textContent = `
   .ans-btn.ans-correct { background: var(--sage) !important; color: white !important; border-color: var(--sage) !important; }
   .ans-btn.ans-wrong   { background: var(--red)  !important; color: white !important; border-color: var(--red)  !important; }
   .ans-btn             { transition: background .1s, border-color .1s; }
+  .btn:disabled        { opacity: .45 !important; cursor: not-allowed !important; pointer-events: none !important; }
+  #toast-container     { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+  .toast               { padding:10px 16px; border-radius:6px; font-size:12px; font-weight:600; color:white; min-width:200px; max-width:320px; box-shadow:0 4px 16px rgba(0,0,0,.18); display:flex; align-items:center; gap:8px; transition:opacity .35s, transform .35s; animation:toastIn .2s ease; }
+  .toast-success       { background: var(--sage, #5a8a6a); }
+  .toast-error         { background: var(--red, #c0392b); }
+  .toast-info          { background: var(--navy, #1a2b4a); }
+  @keyframes toastIn   { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 `;
 document.head.appendChild(style);
 </script>
