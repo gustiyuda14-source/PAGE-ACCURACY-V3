@@ -3592,6 +3592,10 @@ async function generateAndPush() {
   await new Promise(r => setTimeout(r, 30));
 
   try {
+    // Cek duplikat nomor
+    const { data: exists } = await sb.from('paket').select('id').eq('nomor', nomor).maybeSingle();
+    if (exists) throw new Error(`Paket nomor ${nomor} sudah ada. Gunakan nomor lain.`);
+
     const paket = generatePaketJS(nomor, kolomDefs);
     const valid = validatePaketJS(paket);
     if (!valid) throw new Error('Validasi soal gagal — cek logic generator');
