@@ -1784,10 +1784,7 @@
               <div class="card-bd">
                 <div class="section-label">Pilih Kolom (bisa lebih dari satu)</div>
                 <div class="kolom-grid" id="kolamGrid" style="grid-template-columns: 1fr 1fr;">
-                  <div class="k-chip active" data-kolom="7" onclick="toggleChip(this)">
-                    <div class="k-num">Paket 7</div>
-                    <div class="k-tema">Kolom I – X</div>
-                  </div>
+                  <div style="font-size:11px;color:var(--text-muted);padding:8px 0;" id="kolamGrid-loading">Memuat paket...</div>
                 </div>
                 <div class="two-col">
                   <div>
@@ -1913,7 +1910,7 @@
                   <div style="border:1px solid var(--border);border-radius:2px;padding:14px;background:var(--cream);">
                     <div class="section-label">Pilih Paket</div>
                     <select id="examPaket" class="select-input" style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--navy);margin-top:4px;">
-                      <option value="7">Paket 7 (I - X)</option>
+                      <option value="">Memuat...</option>
                     </select>
                   </div>
                   <div style="border:1px solid var(--border);border-radius:2px;padding:14px;background:var(--cream);">
@@ -3426,11 +3423,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Update examPaket options dari DB
-  sb.from('paket').select('nomor,nama').eq('aktif', false).order('nomor')
+  // Update examPaket options dari DB (paket aktif saja)
+  sb.from('paket').select('nomor,nama').eq('aktif', true).order('nomor')
     .then(({ data }) => {
-      // Aktif false = draft, tapi kita tampilkan semua untuk testing
-      // Nanti kalau sudah ada paket aktif, ganti eq('aktif',true)
+      if (!data || data.length === 0) return;
+      const sel = document.getElementById('examPaket');
+      if (!sel) return;
+      sel.innerHTML = data.map(p => `<option value="${p.nomor}">Paket ${p.nomor} (I - X)</option>`).join('');
     });
 });
 
@@ -3658,6 +3657,40 @@ async function togglePaketAktif(id, current) {
   loadPaketList();
 }
 
+
+/* ── Load paket aktif ke kolamGrid (halaman latihan & exam) ── */
+async function loadKolomGrid() {
+  const grid = document.getElementById('kolamGrid');
+  const loading = document.getElementById('kolamGrid-loading');
+  if (!grid) return;
+  const { data, error } = await sb.from('paket').select('nomor,nama').eq('aktif', true).order('nomor');
+  if (error || !data || data.length === 0) {
+    if (loading) loading.textContent = 'Belum ada paket aktif.';
+    return;
+  }
+  if (loading) loading.remove();
+  grid.innerHTML = data.map((p, i) => `
+    <div class="k-chip${i === 0 ? ' active' : ''}" data-kolom="${p.nomor}" onclick="toggleChip(this)">
+      <div class="k-num">Paket ${p.nomor}</div>
+      <div class="k-tema">Kolom I – X</div>
+    </div>`).join('');
+  // Update latInfo sesuai chip yang aktif
+  const activeCount = grid.querySelectorAll('.k-chip.active').length;
+  const info = document.getElementById('latInfo');
+  if (info) {
+    info.className = activeCount ? 'info-box green' : 'info-box';
+    info.innerHTML = activeCount
+      ? `<strong>${activeCount} paket dipilih · ${activeCount * 500} soal</strong> · Estimasi ${activeCount * 30} menit`
+      : '⚠ Pilih minimal 1 paket';
+  }
+}
+
+// Hook showPage: load kolamGrid saat halaman latihan dibuka
+const _origShowPageForGrid = window.showPage;
+window.showPage = function(id, navEl) {
+  _origShowPageForGrid(id, navEl);
+  if (id === 'p-latihan') loadKolomGrid();
+};
 
 // Load paket list saat DOMContentLoaded dan saat nav admin diklik
 document.addEventListener('DOMContentLoaded', () => {
