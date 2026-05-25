@@ -3532,8 +3532,9 @@ async function pushPaketToDB(paket) {
 
   for (const kol of paket.kolom) {
     // 2. Insert kolom
+    const syms = SYMBOL_SETS[kol.symbol_set];
     const { data: kData, error: kErr } = await sb.from('kolom')
-      .insert({ paket_id: pData.id, nomor: kol.nomor, symbol_set: kol.symbol_set })
+      .insert({ paket_id: pData.id, nomor: kol.nomor, nama: kol.symbol_set, simbol: syms })
       .select().single();
     if (kErr) throw new Error(`Insert kolom ${kol.nomor}: ` + kErr.message);
 
@@ -3634,15 +3635,12 @@ window.showModal = function(id) {
   _origShowModal(id);
 };
 
-// Load paket list when admin panel is shown
-document.addEventListener('DOMContentLoaded', () => {
-  const obs = new MutationObserver(() => {
-    const ap = document.getElementById('p-admin');
-    if (ap && ap.style.display !== 'none') loadPaketList();
-  });
-  const ap = document.getElementById('p-admin');
-  if (ap) obs.observe(ap, { attributes: true, attributeFilter: ['style'] });
-});
+// Hook loadPaketList ke showPage agar trigger saat admin panel dibuka
+const _origShowPage = window.showPage;
+window.showPage = function(id, navEl) {
+  _origShowPage(id, navEl);
+  if (id === 'p-admin') loadPaketList();
+};
 
 /* ── CSS tambahan untuk feedback jawaban ── */
 const style = document.createElement('style');
