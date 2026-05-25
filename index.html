@@ -3530,22 +3530,29 @@ async function pushPaketToDB(paket) {
     .select().single();
   if (pErr) throw new Error('Insert paket: ' + pErr.message);
 
-  for (const kol of paket.kolom) {
-    // 2. Insert kolom
-    const syms = SYMBOL_SETS[kol.symbol_set];
-    const { data: kData, error: kErr } = await sb.from('kolom')
-      .insert({ paket_id: pData.id, nomor: kol.nomor, nama: kol.symbol_set, simbol: syms })
-      .select().single();
-    if (kErr) throw new Error(`Insert kolom ${kol.nomor}: ` + kErr.message);
+  // 2. Insert semua kolom sekaligus lalu ambil id-nya
+  const kolomRows = paket.kolom.map(kol => ({
+    paket_id: pData.id, nomor: kol.nomor,
+    nama: kol.symbol_set, simbol: SYMBOL_SETS[kol.symbol_set]
+  }));
+  const { data: kData, error: kErr } = await sb.from('kolom')
+    .insert(kolomRows).select('id,nomor');
+  if (kErr) throw new Error('Insert kolom: ' + kErr.message);
 
-    // 3. Insert soal in batches of 50
+  // 3. Insert semua soal paralel (Promise.all per kolom)
+  const kolomMap = {};
+  kData.forEach(k => kolomMap[k.nomor] = k.id);
+
+  await Promise.all(paket.kolom.map(kol => {
     const rows = kol.soal.map(s => ({
-      kolom_id: kData.id, nomor: s.nomor,
+      kolom_id: kolomMap[kol.nomor], nomor: s.nomor,
       shown: s.shown, kunci: s.kunci
     }));
-    const { error: sErr } = await sb.from('soal').insert(rows);
-    if (sErr) throw new Error(`Insert soal kolom ${kol.nomor}: ` + sErr.message);
-  }
+    return sb.from('soal').insert(rows).then(({ error }) => {
+      if (error) throw new Error(`Insert soal kolom ${kol.nomor}: ` + error.message);
+    });
+  }));
+
   return pData.id;
 }
 
@@ -3581,6 +3588,9 @@ async function generateAndPush() {
   btn.disabled = true;
   btn.textContent = 'Generating...';
   status.textContent = 'Membuat soal...';
+
+  // Yield ke browser dulu agar UI update sebelum komputasi berat
+  await new Promise(r => setTimeout(r, 30));
 
   try {
     const paket = generatePaketJS(nomor, kolomDefs);
