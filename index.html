@@ -2241,7 +2241,7 @@
                 <div style="font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);">Generator Bank Soal</div>
                 <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:2px;">Generate paket baru otomatis & push ke database</div>
               </div>
-              <button class="btn btn-gold" style="font-size:10px;padding:7px 14px;" onclick="showModal('modal-gen-paket')">+ Generate Paket Baru</button>
+              <button class="btn btn-gold" style="font-size:10px;padding:7px 14px;" onclick="openGenPaketModal()">+ Generate Paket Baru</button>
             </div>
             <div style="padding:12px 16px;" id="paket-list-wrap">
               <div style="font-size:11px;color:var(--text-muted);text-align:center;padding:12px 0;" id="paket-list-empty">Memuat daftar paket...</div>
@@ -3571,7 +3571,7 @@ function openGenPaketModal() {
     container.appendChild(div);
   }
   document.getElementById('gen-status').textContent = '';
-  showModal('modal-gen-paket');
+  document.getElementById('modal-gen-paket').classList.add('show');
 }
 
 async function generateAndPush() {
@@ -3638,12 +3638,6 @@ async function togglePaketAktif(id, current) {
   loadPaketList();
 }
 
-// Override showModal to populate kolom selectors for gen-paket
-const _origShowModal = window.showModal;
-window.showModal = function(id) {
-  if (id === 'modal-gen-paket') { openGenPaketModal(); return; }
-  _origShowModal(id);
-};
 
 // Hook loadPaketList ke showPage agar trigger saat admin panel dibuka
 const _origShowPage = window.showPage;
