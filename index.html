@@ -2813,6 +2813,209 @@
   </script>
 
 <!-- ══════════════════════════════════════════
+     AUTH ENGINE — Supabase users table
+══════════════════════════════════════════ -->
+<script>
+/* ── State user login ── */
+let _authUser = null; // row dari tabel users
+
+/* ── Override doLogin: cek ke Supabase ── */
+async function doLogin() {
+  const username = document.getElementById('auth-id').value.trim();
+  const password = document.getElementById('auth-pw').value.trim();
+  const err      = document.getElementById('auth-err');
+  const btn      = document.querySelector('#screen-login .btn');
+
+  if (!username || !password) { err.classList.add('show'); return; }
+
+  if (btn) { btn.textContent = 'Memverifikasi...'; btn.disabled = true; }
+  err.classList.remove('show');
+
+  try {
+    // Query users table — password_hash disimpan plaintext untuk demo
+    // (production: ganti dengan bcrypt via Edge Function)
+    const { data, error } = await sb
+      .from('users')
+      .select('*')
+      .eq('username', username)
+      .eq('password_hash', password)
+      .eq('aktif', true)
+      .single();
+
+    if (error || !data) {
+      err.classList.add('show');
+      return;
+    }
+
+    _authUser  = data;
+    currentRole = data.role === 'superadmin' || data.role === 'admin' ? 'admin' : 'member';
+
+    if (currentRole === 'admin') {
+      enterApp();
+    } else {
+      // Peserta langsung masuk — tidak perlu dropdown pilih nama
+      currentStudent = {
+        name:  data.nama,
+        nomor: data.nomor || data.username,
+        kelas: data.kelas || 'Kelas Intensif',
+        asal:  data.asal  || '—',
+        id:    data.id,
+      };
+      enterApp();
+    }
+
+  } catch (e) {
+    err.classList.add('show');
+  } finally {
+    if (btn) { btn.textContent = 'Masuk ke Platform →'; btn.disabled = false; }
+  }
+}
+
+/* ── Override doLogout ── */
+function doLogout() {
+  currentRole    = null;
+  currentStudent = null;
+  _authUser      = null;
+  eng            = null;
+  document.getElementById('app').style.display         = 'none';
+  document.getElementById('screen-login').style.display = 'flex';
+  document.getElementById('auth-id').value  = '';
+  document.getElementById('auth-pw').value  = '';
+  document.getElementById('auth-err').classList.remove('show');
+}
+
+/* ── Override addStudent: simpan ke Supabase + localStorage ── */
+async function addStudent() {
+  const nama  = document.getElementById('new-nama').value.trim();
+  const nomor = document.getElementById('new-nomor').value.trim();
+  const asal  = document.getElementById('new-asal').value.trim();
+  const kelas = document.getElementById('new-kelas').value;
+  const err   = document.getElementById('new-err');
+
+  if (!nama || !nomor) { err.classList.add('show'); return; }
+  err.classList.remove('show');
+
+  // Password default = nama depan lowercase
+  const defaultPw = nama.split(' ')[0].toLowerCase();
+
+  const { error } = await sb.from('users').insert({
+    nama, username: nomor, password_hash: defaultPw,
+    role: 'peserta', kelas, asal, nomor, aktif: true
+  });
+
+  if (error) {
+    if (error.code === '23505') {
+      err.textContent = 'Nomor peserta sudah terdaftar.';
+    } else {
+      err.textContent = 'Gagal simpan: ' + error.message;
+    }
+    err.classList.add('show');
+    return;
+  }
+
+  // Juga update localStorage (untuk fallback)
+  const list = getStudents();
+  list.push({ name: nama, nomor, kelas, asal });
+  saveStudents(list);
+
+  document.getElementById('new-nama').value  = '';
+  document.getElementById('new-nomor').value = '';
+  document.getElementById('new-asal').value  = '';
+  hideModal('modal-add-student');
+  renderAdminPage();
+
+  // Refresh admin list dari DB
+  await refreshAdminStudentList();
+}
+
+/* ── Refresh daftar peserta dari Supabase ── */
+async function refreshAdminStudentList() {
+  const { data } = await sb.from('users')
+    .select('id,nama,nomor,kelas,asal,role,aktif')
+    .eq('role', 'peserta')
+    .order('nama');
+  if (!data) return;
+
+  // Update localStorage juga agar loadStudentUI() tetap jalan
+  saveStudents(data.map(u => ({ name: u.nama, nomor: u.nomor || u.username, kelas: u.kelas, asal: u.asal })));
+
+  const tbody = document.getElementById('admin-student-body');
+  if (!tbody) return;
+  tbody.innerHTML = data.map((u, i) => `
+    <tr>
+      <td style="color:var(--text-muted);font-size:11px;">${i+1}</td>
+      <td>
+        <div style="font-weight:600;">${u.nama}</div>
+        <div style="font-size:10px;color:var(--text-muted);">${u.nomor || '—'}</div>
+      </td>
+      <td>${u.nomor || '—'}</td>
+      <td><span class="mode-pill pill-lat">${(u.kelas||'').replace('Kelas ','')}</span></td>
+      <td>${u.asal || '—'}</td>
+      <td>—</td>
+      <td>—</td>
+      <td>
+        <button class="icon-btn" title="Reset password" onclick="resetPassword('${u.id}','${u.nama}')">🔑</button>
+        <button class="icon-btn" title="Hapus" onclick="removeStudentDB('${u.id}','${u.nama}')">🗑</button>
+      </td>
+    </tr>`).join('');
+
+  document.getElementById('adm-total-peserta').textContent = data.length;
+}
+
+/* ── Reset password peserta ── */
+async function resetPassword(userId, nama) {
+  const newPw = prompt('Password baru untuk ' + nama + ':');
+  if (!newPw) return;
+  await sb.from('users').update({ password_hash: newPw }).eq('id', userId);
+  alert('Password berhasil direset untuk ' + nama);
+}
+
+/* ── Hapus peserta dari DB ── */
+async function removeStudentDB(userId, nama) {
+  if (!confirm('Hapus ' + nama + ' dari database?')) return;
+  await sb.from('users').update({ aktif: false }).eq('id', userId);
+  await refreshAdminStudentList();
+}
+
+/* ── Override renderAdminPage: load dari Supabase ── */
+const _origRenderAdmin = typeof renderAdminPage === 'function' ? renderAdminPage : null;
+async function renderAdminPage() {
+  if (_origRenderAdmin) _origRenderAdmin();
+  await refreshAdminStudentList();
+}
+
+/* ── Sembunyikan screen-select (tidak perlu dropdown lagi) ── */
+document.addEventListener('DOMContentLoaded', () => {
+  const sel = document.getElementById('screen-select');
+  if (sel) sel.style.display = 'none';
+
+  // Ubah label placeholder login
+  const idInput = document.getElementById('auth-id');
+  const pwInput = document.getElementById('auth-pw');
+  const idLabel = document.querySelector('label[for="auth-id"], .auth-label');
+  if (idInput) idInput.placeholder = 'No. Peserta atau "admin"';
+  if (pwInput) pwInput.placeholder = 'Password';
+
+  // Enter key submit
+  [idInput, pwInput].forEach(el => {
+    if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  });
+
+  // Tampilkan info default credentials di login screen
+  const authCard = document.querySelector('.auth-card');
+  if (authCard && !document.getElementById('auth-hint')) {
+    const hint = document.createElement('div');
+    hint.id = 'auth-hint';
+    hint.style.cssText = 'margin-top:12px;padding:10px 12px;background:rgba(201,169,110,.08);border:1px solid rgba(201,169,110,.2);border-radius:4px;font-size:10px;color:rgba(255,255,255,.45);line-height:1.7;';
+    hint.innerHTML = '<strong style="color:rgba(201,169,110,.7)">Demo credentials:</strong><br>'
+      + 'Admin: <code>admin</code> / <code>admin2026</code><br>'
+      + 'Peserta: <code>IPDN-2026-0012</code> / <code>gusti</code>';
+    authCard.appendChild(hint);
+  }
+});
+</script>
+
+<!-- ══════════════════════════════════════════
      CAT ENGINE — Supabase-connected
      Override mock functions dari script atas
 ══════════════════════════════════════════ -->
